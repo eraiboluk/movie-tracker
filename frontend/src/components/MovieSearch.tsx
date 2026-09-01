@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { TextField, Button, Card, CardContent, CardActions, Typography, Stack, CircularProgress } from '@mui/material'
-import { searchMovies, addMovie, type TmdbMovie } from '../api/movies'
+import { searchMovies, addMovie} from '../api/movies'
 
 export function MovieSearch() {
   const [input, setInput] = useState('')
