@@ -67,7 +67,9 @@ public class MoviesController : ControllerBase
             Title = request.Title,
             Overview = request.Overview,
             PosterPath = request.PosterPath,
-            ReleaseDate = request.ReleaseDate
+            ReleaseDate = request.ReleaseDate.HasValue
+                ? DateTime.SpecifyKind(request.ReleaseDate.Value, DateTimeKind.Utc)
+                : null
         };
 
         _db.Movies.Add(movie);
