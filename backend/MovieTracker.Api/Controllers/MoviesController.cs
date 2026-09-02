@@ -1,9 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using MovieTracker.Api.Data;
 using MovieTracker.Api.DTOs;
 using MovieTracker.Api.Models;
+using MovieTracker.Api.Options;
 using MovieTracker.Api.Services;
+using System.Text.Json;
 
 namespace MovieTracker.Api.Controllers;
 
@@ -14,12 +17,18 @@ public class MoviesController : ControllerBase
     private readonly MovieTrackerDbContext _db;
     private readonly ITmdbService _tmdbService;
     private readonly ICurrentUserService _currentUser;
+    private readonly ICacheService _cache;
+    private readonly CacheSettings _cacheSettings;
 
-    public MoviesController(MovieTrackerDbContext db, ITmdbService tmdbService, ICurrentUserService currentUser)
+    public MoviesController(MovieTrackerDbContext db, ITmdbService tmdbService,
+        ICurrentUserService currentUser, ICacheService cache, IOptions<CacheSettings>
+  cacheSettings)
     {
         _db = db;
         _tmdbService = tmdbService;
         _currentUser = currentUser;
+        _cache = cache;
+        _cacheSettings = cacheSettings.Value;
     }
 
     [HttpGet("search")]
@@ -97,5 +106,19 @@ public class MoviesController : ControllerBase
         _db.Movies.Remove(movie);
         await _db.SaveChangesAsync();
         return NoContent();
+    }
+
+    [HttpGet("popular")]
+    public async Task<ActionResult<List<TmdbMovieDto>>> GetPopularMovies()
+    {
+        var cached = await _cache.GetAsync(_cacheSettings.PopularMoviesCacheKey);
+        if (cached is not null)
+        {
+            var movies = JsonSerializer.Deserialize<List<TmdbMovieDto>>(cached);
+            return Ok(movies);
+        }
+
+        var fresh = await _tmdbService.GetPopularMoviesAsync();
+        return Ok(fresh);
     }
 }
