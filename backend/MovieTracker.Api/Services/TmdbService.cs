@@ -1,4 +1,7 @@
-﻿using MovieTracker.Api.DTOs;
+﻿using Microsoft.Extensions.Options;
+using MovieTracker.Api.DTOs;
+using MovieTracker.Api.Options;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace MovieTracker.Api.Services;
@@ -7,27 +10,80 @@ public class TmdbService : ITmdbService
 {
     private readonly HttpClient _httpClient;
     private readonly string _apiKey;
+    private readonly ICacheService _cache;
+    private readonly CacheSettings _cacheSettings;
+    private readonly TmdbSettings _tmdbSettings;
 
-    public TmdbService(HttpClient httpClient, IConfiguration config)
+    public TmdbService(HttpClient httpClient, ICacheService cache,
+        IOptions<CacheSettings> cacheSettings, IOptions<TmdbSettings> tmdbSettings)
     {
         _httpClient = httpClient;
-        _apiKey = config["Tmdb:ApiKey"]
-            ?? throw new InvalidOperationException("TMDB API key not found");
+        _cache = cache;
+        _cacheSettings = cacheSettings.Value;
+        _tmdbSettings = tmdbSettings.Value;
+
+        if (string.IsNullOrEmpty(_tmdbSettings.ApiKey))
+            throw new InvalidOperationException("TMDB API key not found");
+
+        _apiKey = _tmdbSettings.ApiKey;
     }
 
     public async Task<List<TmdbMovieDto>> SearchMoviesAsync(string query)
     {
-        var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
-            $"search/movie?query={Uri.EscapeDataString(query)}&api_key={_apiKey}&language=en-US");
+        var normalized = NormalizeQuery(query);
+        var cacheKey = $"{_cacheSettings.SearchCacheKeyPrefix}{normalized}";
 
-        return response?.Results.Select(r => new TmdbMovieDto
+        var cached = await _cache.GetAsync(cacheKey);
+        if (cached is not null)
+        {
+            return JsonSerializer.Deserialize<List<TmdbMovieDto>>(cached) ?? [];
+        }
+
+        var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
+            $"search/movie?query={Uri.
+              EscapeDataString(normalized)}&api_key={_apiKey}&language={_tmdbSettings.Language}");
+
+        var results = response?.Results.Select(r => new TmdbMovieDto
         {
             TmdbId = r.Id,
             Title = r.Title,
             Overview = r.Overview,
             PosterPath = r.PosterPath,
             ReleaseDate = r.ReleaseDate
-        }).ToList() ?? new List<TmdbMovieDto>();
+        }).ToList() ?? [];
+
+        if (results.Count > 0)
+        {
+            var json = JsonSerializer.Serialize(results);
+            await _cache.SetAsync(cacheKey, json, TimeSpan.FromHours(_cacheSettings.
+           SearchCacheTtlHours));
+        }
+
+        return results;
+    }
+
+    public async Task<List<TmdbMovieDto>> GetPopularMoviesAsync()
+    {
+        var allMovies = new List<TmdbMovieDto>();
+
+        for (int page = 1; page <= _cacheSettings.PopularMoviesPageCount; page++)
+        {
+            var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
+                $"movie/popular?api_key={_apiKey}&language={_tmdbSettings.Language}&page={page}");
+
+            if (response?.Results is null) break;
+
+            allMovies.AddRange(response.Results.Select(r => new TmdbMovieDto
+            {
+                TmdbId = r.Id,
+                Title = r.Title,
+                Overview = r.Overview,
+                PosterPath = r.PosterPath,
+                ReleaseDate = r.ReleaseDate
+            }));
+        }
+
+        return allMovies;
     }
 
     private class TmdbSearchResponse
@@ -45,4 +101,6 @@ public class TmdbService : ITmdbService
         [JsonPropertyName("release_date")]
         public string? ReleaseDate { get; set; }
     }
+    private static string NormalizeQuery(string query)
+        => query.Trim().ToLowerInvariant();
 }
