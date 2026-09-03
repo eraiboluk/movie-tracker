@@ -84,7 +84,7 @@ export function MovieSearch() {
               )}
               <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
                 <CardContent sx={{ flex: '1 0 auto', pb: 0 }}>
-                  <Typography variant="subtitle1" fontWeight="bold">
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
                     {movie.title}
                   </Typography>
                   {movie.releaseDate && (

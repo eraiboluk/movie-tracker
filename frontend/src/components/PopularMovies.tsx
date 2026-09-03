@@ -88,7 +88,7 @@ export function PopularMovies() {
                       {movie.title}
                     </Typography>
                     {movie.releaseDate && (
-                      <Typography variant="caption" color="text.secondary" display="block">
+                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
                         {movie.releaseDate.split('-')[0]}
                       </Typography>
                     )}
