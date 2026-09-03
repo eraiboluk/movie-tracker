@@ -1,4 +1,5 @@
 import { apiClient } from './axiosClient'
+import { TMDB_IMAGE_BASE_URL, TMDB_POSTER_SIZES, DEFAULT_POSTER_SIZE } from '../constants'
 
 export interface TmdbMovie {
   tmdbId: number
@@ -13,8 +14,23 @@ export interface Movie extends TmdbMovie {
   createdAt: string
 }
 
+export const getPosterUrl = (
+  posterPath: string | null | undefined,
+  size: keyof typeof TMDB_POSTER_SIZES = DEFAULT_POSTER_SIZE
+): string | null => {
+  if (!posterPath) return null
+  return `${TMDB_IMAGE_BASE_URL}/${TMDB_POSTER_SIZES[size]}${posterPath}`
+}
+
 export const searchMovies = async (query: string): Promise<TmdbMovie[]> => {
-  const { data } = await apiClient.get<TmdbMovie[]>('/movies/search', { params: { query } })
+  const { data } = await apiClient.get<TmdbMovie[]>('/movies/search', {
+    params: { query },
+  })
+  return data
+}
+
+export const getPopularMovies = async (): Promise<TmdbMovie[]> => {
+  const { data } = await apiClient.get<TmdbMovie[]>('/movies/popular')
   return data
 }
 
