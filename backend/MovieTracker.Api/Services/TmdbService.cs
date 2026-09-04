@@ -93,7 +93,7 @@ public class TmdbService : ITmdbService
                 }));
             }
 
-            return allMovies;
+            return allMovies.DistinctBy(m => m.TmdbId).ToList();
         }
         catch (HttpRequestException)
         {

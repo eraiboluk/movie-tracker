@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query'
 import { searchMovies, addMovie } from '../api/movies'
 import type { TmdbMovie } from '../api/movies'
 import { useDebounce } from './useDebounce'
@@ -14,29 +14,30 @@ export function useMovieSearch() {
     const { data: popularMovies } = usePopularMovies()
 
     const { data: searchResults, isFetching } = useQuery({
-    queryKey: [QUERY_KEYS.SEARCH_MOVIES, debouncedQuery],
-    queryFn: () => searchMovies(debouncedQuery),
-    enabled: debouncedQuery.length >= MIN_SEARCH_CHAR_LENGTH,
-    staleTime: STALE_TIMES.SEARCH,
+        queryKey: [QUERY_KEYS.SEARCH_MOVIES, debouncedQuery],
+        queryFn: () => searchMovies(debouncedQuery),
+        enabled: debouncedQuery.length >= MIN_SEARCH_CHAR_LENGTH,
+        staleTime: STALE_TIMES.SEARCH,
+        placeholderData: keepPreviousData,
     })
 
     const addMutation = useMutation({
-    mutationFn: addMovie,
-    onSuccess: () =>
+        mutationFn: addMovie,
+        onSuccess: () =>
         queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MY_MOVIES] }),
     })
 
     const trimmedInput = input.trim().toLowerCase()
 
-     const movies: TmdbMovie[] = (() => {
+    const movies: TmdbMovie[] = (() => {
         if (trimmedInput.length === 0) return []
 
         const localMatches = popularMovies?.filter((m) =>
-        m.title.toLowerCase().includes(trimmedInput)
+            m.title.toLowerCase().includes(trimmedInput)
         ) ?? []
 
         if (trimmedInput.length < MIN_SEARCH_CHAR_LENGTH || !searchResults) {
-        return localMatches
+            return localMatches
         }
 
         const localIds = new Set(localMatches.map(m => m.tmdbId))
@@ -47,11 +48,11 @@ export function useMovieSearch() {
     })()
 
     return {
-    input,
-    setInput,
-    movies,
-    isFetching: trimmedInput.length >= MIN_SEARCH_CHAR_LENGTH && isFetching,
-    addMovie: addMutation.mutate,
-    isAdding: addMutation.isPending,
+        input,
+        setInput,
+        movies,
+        isFetching: trimmedInput.length >= MIN_SEARCH_CHAR_LENGTH && isFetching,
+        addMovie: addMutation.mutate,
+        isAdding: addMutation.isPending,
     }
 }

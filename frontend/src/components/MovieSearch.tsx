@@ -15,8 +15,7 @@ import { SEARCH_RESULT_POSTER_SIZE } from '../constants'
 import { useMovieSearch } from '../hooks/useMovieSearch'
 
 export function MovieSearch() {
-  const { input, setInput, movies, isFetching, addMovie, isAdding } =
-    useMovieSearch()
+  const { input, setInput, movies, isFetching, addMovie, isAdding } = useMovieSearch()
 
   return (
     <Stack spacing={2}>
