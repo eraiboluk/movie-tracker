@@ -16,7 +16,9 @@ builder.Services.AddDbContext<MovieTrackerDbContext>(options =>
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
 {
     var config = builder.Configuration.GetConnectionString("Redis")!;
-    return ConnectionMultiplexer.Connect(config);
+    var options = ConfigurationOptions.Parse(config);
+    options.AbortOnConnectFail = false;
+    return ConnectionMultiplexer.Connect(options);
 });
 
 builder.Services.AddSingleton<ICacheService, RedisCacheService>();
@@ -26,6 +28,7 @@ builder.Services.AddHttpClient<ITmdbService, TmdbService>(client =>
     client.BaseAddress = new Uri(builder.Configuration["Tmdb:BaseUrl"]!);
 });
 
+builder.Services.AddScoped<IMovieService, MovieService>();
 builder.Services.AddScoped<ICurrentUserService, TemporaryCurrentUserService>();
 
 var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").
@@ -45,6 +48,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHostedService<PopularMoviesWorker>();
+builder.Services.AddProblemDetails();
 
 builder.Services.Configure<CacheSettings>(
        builder.Configuration.GetSection(CacheSettings.SectionName));
@@ -62,6 +66,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+app.UseExceptionHandler();
 
 app.UseHttpsRedirection();
 

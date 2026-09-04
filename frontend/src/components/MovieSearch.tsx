@@ -1,53 +1,99 @@
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { TextField, Button, Card, CardContent, CardActions, Typography, Stack, CircularProgress } from '@mui/material'
-import { searchMovies, addMovie} from '../api/movies'
+import {
+  TextField,
+  Card,
+  CardContent,
+  CardActions,
+  CardMedia,
+  Typography,
+  Stack,
+  CircularProgress,
+  Box,
+  Button,
+} from '@mui/material'
+import { getPosterUrl } from '../api/movies'
+import { SEARCH_RESULT_POSTER_SIZE } from '../constants'
+import { useMovieSearch } from '../hooks/useMovieSearch'
 
 export function MovieSearch() {
-  const [input, setInput] = useState('')
-  const [submittedQuery, setSubmittedQuery] = useState('')
-  const queryClient = useQueryClient()
-
-  const { data: results, isFetching } = useQuery({
-    queryKey: ['tmdb-search', submittedQuery],
-    queryFn: () => searchMovies(submittedQuery),
-    enabled: submittedQuery.length > 0,
-  })
-
-  const addMutation = useMutation({
-    mutationFn: addMovie,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['my-movies'] }),
-  })
+  const { input, setInput, movies, isFetching, addMovie, isAdding } =
+    useMovieSearch()
 
   return (
     <Stack spacing={2}>
-      <Stack direction="row" spacing={1}>
-        <TextField
-          fullWidth
-          label="Search film"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && setSubmittedQuery(input.trim())}
-        />
-        <Button variant="outlined" onClick={() => setSubmittedQuery(input.trim())}>Search</Button>
-      </Stack>
+      <TextField
+        fullWidth
+        label="Search film"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+      />
 
-      {isFetching && <CircularProgress size={31} />}
+      {isFetching && <CircularProgress size={24} />}
 
       <Stack spacing={1}>
-        {results?.map((movie) => (
-          <Card key={movie.tmdbId}>
-            <CardContent>
-              <Typography variant="h4" color="primary">{movie.title}</Typography>
-              <Typography variant="body2" color="text.secondary">{movie.overview}</Typography>
-            </CardContent>
-            <CardActions>
-              <Button size="small" onClick={() => addMutation.mutate(movie)} disabled={addMutation.isPending}>
-                Add to my list
-              </Button>
-            </CardActions>
-          </Card>
-        ))}
+        {movies.map((movie) => {
+          const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
+          return (
+            <Card key={movie.tmdbId} sx={{ display: 'flex' }}>
+              {posterUrl ? (
+                <CardMedia
+                  component="img"
+                  sx={{ width: 80, objectFit: 'cover' }}
+                  image={posterUrl}
+                  alt={movie.title}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    width: 80,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    bgcolor: 'grey.200',
+                    flexShrink: 0,
+                  }}
+                >
+                  <Typography variant="caption" color="text.secondary">
+                    N/A
+                  </Typography>
+                </Box>
+              )}
+              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+                <CardContent sx={{ flex: '1 0 auto', pb: 0 }}>
+                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
+                    {movie.title}
+                  </Typography>
+                  {movie.releaseDate && (
+                    <Typography variant="body2" color="text.secondary">
+                      {movie.releaseDate.split('-')[0]}
+                    </Typography>
+                  )}
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      display: '-webkit-box',
+                      WebkitLineClamp: 2,
+                      WebkitBoxOrient: 'vertical',
+                    }}
+                  >
+                    {movie.overview}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    size="small"
+                    onClick={() => addMovie(movie)}
+                    disabled={isAdding}
+                  >
+                    Add
+                  </Button>
+                </CardActions>
+              </Box>
+            </Card>
+          )
+        })}
       </Stack>
     </Stack>
   )

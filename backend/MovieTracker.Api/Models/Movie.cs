@@ -9,7 +9,7 @@ public class Movie
     public string? PosterPath { get; set; }
     public string? Overview { get; set; }
     public DateTime? ReleaseDate { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
 }

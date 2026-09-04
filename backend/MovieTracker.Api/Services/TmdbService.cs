@@ -14,8 +14,10 @@ public class TmdbService : ITmdbService
     private readonly CacheSettings _cacheSettings;
     private readonly TmdbSettings _tmdbSettings;
 
-    public TmdbService(HttpClient httpClient, ICacheService cache,
-        IOptions<CacheSettings> cacheSettings, IOptions<TmdbSettings> tmdbSettings)
+    public TmdbService(
+        HttpClient httpClient, ICacheService cache,
+        IOptions<CacheSettings> cacheSettings, 
+        IOptions<TmdbSettings> tmdbSettings)
     {
         _httpClient = httpClient;
         _cache = cache;
@@ -28,7 +30,7 @@ public class TmdbService : ITmdbService
         _apiKey = _tmdbSettings.ApiKey;
     }
 
-    public async Task<List<TmdbMovieDto>> SearchMoviesAsync(string query)
+    public async Task<List<TmdbMovieDto>> SearchMoviesAsync(string query, CancellationToken ct = default)
     {
         var normalized = NormalizeQuery(query);
         var cacheKey = $"{_cacheSettings.SearchCacheKeyPrefix}{normalized}";
@@ -39,51 +41,64 @@ public class TmdbService : ITmdbService
             return JsonSerializer.Deserialize<List<TmdbMovieDto>>(cached) ?? [];
         }
 
-        var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
-            $"search/movie?query={Uri.
-              EscapeDataString(normalized)}&api_key={_apiKey}&language={_tmdbSettings.Language}");
-
-        var results = response?.Results.Select(r => new TmdbMovieDto
-        {
-            TmdbId = r.Id,
-            Title = r.Title,
-            Overview = r.Overview,
-            PosterPath = r.PosterPath,
-            ReleaseDate = r.ReleaseDate
-        }).ToList() ?? [];
-
-        if (results.Count > 0)
-        {
-            var json = JsonSerializer.Serialize(results);
-            await _cache.SetAsync(cacheKey, json, TimeSpan.FromHours(_cacheSettings.
-           SearchCacheTtlHours));
-        }
-
-        return results;
-    }
-
-    public async Task<List<TmdbMovieDto>> GetPopularMoviesAsync()
-    {
-        var allMovies = new List<TmdbMovieDto>();
-
-        for (int page = 1; page <= _cacheSettings.PopularMoviesPageCount; page++)
+        try
         {
             var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
-                $"movie/popular?api_key={_apiKey}&language={_tmdbSettings.Language}&page={page}");
+                $"search/movie?query={Uri.
+                    EscapeDataString(normalized)}&api_key={_apiKey}&language={_tmdbSettings.Language}", ct);
 
-            if (response?.Results is null) break;
-
-            allMovies.AddRange(response.Results.Select(r => new TmdbMovieDto
+            var results = response?.Results.Select(r => new TmdbMovieDto
             {
                 TmdbId = r.Id,
                 Title = r.Title,
                 Overview = r.Overview,
                 PosterPath = r.PosterPath,
                 ReleaseDate = r.ReleaseDate
-            }));
-        }
+            }).ToList() ?? [];
 
-        return allMovies;
+            if (results.Count > 0)
+            {
+                var json = JsonSerializer.Serialize(results);
+                await _cache.SetAsync(cacheKey, json, TimeSpan.FromHours(_cacheSettings.
+                    SearchCacheTtlHours));
+            }
+
+            return results;
+        }
+        catch (HttpRequestException)
+        {
+            return [];
+        }
+    }
+
+    public async Task<List<TmdbMovieDto>> GetPopularMoviesAsync()
+    {
+        var allMovies = new List<TmdbMovieDto>();
+        try 
+        {
+            for (int page = 1; page <= _cacheSettings.PopularMoviesPageCount; page++)
+            {
+                var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
+                    $"movie/popular?api_key={_apiKey}&language={_tmdbSettings.Language}&page={page}");
+
+                if (response?.Results is null) break;
+
+                allMovies.AddRange(response.Results.Select(r => new TmdbMovieDto
+                {
+                    TmdbId = r.Id,
+                    Title = r.Title,
+                    Overview = r.Overview,
+                    PosterPath = r.PosterPath,
+                    ReleaseDate = r.ReleaseDate
+                }));
+            }
+
+            return allMovies;
+        }
+        catch (HttpRequestException)
+        {
+            return [];
+        }
     }
 
     private class TmdbSearchResponse

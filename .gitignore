@@ -489,3 +489,5 @@ frontend/dist/
 .env
 .env.local
 EOF
+
+sorunlar.txt
