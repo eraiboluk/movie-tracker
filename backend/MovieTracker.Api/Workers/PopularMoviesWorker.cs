@@ -31,16 +31,14 @@ public class PopularMoviesWorker : BackgroundService
             try
             {
                 using var scope = _scopeFactory.CreateScope();
-                var tmdbService = scope.ServiceProvider.
-GetRequiredService<ITmdbService>();
+                var tmdbService = scope.ServiceProvider.GetRequiredService<ITmdbService>();
 
                 var movies = await tmdbService.GetPopularMoviesAsync();
                 var json = JsonSerializer.Serialize(movies);
                 await _cache.SetAsync(_settings.PopularMoviesCacheKey, json);
 
                 _logger.LogInformation(
-                    "Popular movies cache refreshed. {Count} movies cached.",
-movies.Count);
+                    "Popular movies cache refreshed. {Count} movies cached.", movies.Count);
             }
             catch (Exception ex)
             {
@@ -48,8 +46,9 @@ movies.Count);
             }
 
             var now = DateTime.UtcNow;
-            var nextRun = now.Date.AddDays(1).AddHours(_settings.
-PopularMoviesRefreshHour);
+            var nextRun = now.Date.AddHours(_settings.PopularMoviesRefreshHour);
+            if (nextRun <= now)
+                nextRun = nextRun.AddDays(1);
             var delay = nextRun - now;
             await Task.Delay(delay, stoppingToken);
         }

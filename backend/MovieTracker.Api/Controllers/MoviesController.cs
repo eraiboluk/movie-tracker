@@ -14,17 +14,20 @@ namespace MovieTracker.Api.Controllers;
 [Route("api/[controller]")]
 public class MoviesController : ControllerBase
 {
-    private readonly MovieTrackerDbContext _db;
+    private readonly IMovieService _movieService;
     private readonly ITmdbService _tmdbService;
     private readonly ICurrentUserService _currentUser;
     private readonly ICacheService _cache;
     private readonly CacheSettings _cacheSettings;
 
-    public MoviesController(MovieTrackerDbContext db, ITmdbService tmdbService,
-        ICurrentUserService currentUser, ICacheService cache, IOptions<CacheSettings>
-  cacheSettings)
+    public MoviesController(
+        IMovieService movieService,
+        ITmdbService tmdbService,
+        ICurrentUserService currentUser,
+        ICacheService cache,
+        IOptions<CacheSettings> cacheSettings)
     {
-        _db = db;
+        _movieService = movieService;
         _tmdbService = tmdbService;
         _currentUser = currentUser;
         _cache = cache;
@@ -32,80 +35,40 @@ public class MoviesController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<ActionResult<List<TmdbMovieDto>>> Search([FromQuery] string query)
+    public async Task<ActionResult<List<TmdbMovieDto>>> Search([FromQuery] string query, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(query)) return BadRequest("query parametre cannot be empty");
-        return Ok(await _tmdbService.SearchMoviesAsync(query));
+        return Ok(await _tmdbService.SearchMoviesAsync(query, ct));
     }
 
     [HttpGet]
-    public async Task<ActionResult<List<MovieDto>>> GetMyMovies()
+    public async Task<ActionResult<List<MovieDto>>> GetMyMovies(CancellationToken ct)
     {
         var userId = _currentUser.GetCurrentUserId();
-
-        var movies = await _db.Movies
-            .Where(m => m.UserId == userId)
-            .OrderByDescending(m => m.CreatedAt)
-            .Select(m => new MovieDto
-            {
-                Id = m.Id,
-                TmdbId = m.TmdbId,
-                Title = m.Title,
-                Overview = m.Overview,
-                PosterPath = m.PosterPath,
-                ReleaseDate = m.ReleaseDate,
-                CreatedAt = m.CreatedAt
-            })
-            .ToListAsync();
-
-        return Ok(movies);
+        return Ok(await _movieService.GetMyMoviesAsync(userId, ct));
     }
 
     [HttpPost]
     public async Task<ActionResult<MovieDto>> AddMovie(AddMovieRequestDto request)
     {
-        var userId = _currentUser.GetCurrentUserId();
-
-        var exists = await _db.Movies.AnyAsync(m => m.UserId == userId && m.TmdbId == request.TmdbId);
-        if (exists) return Conflict("Film exist in the list.");
-
-        var movie = new Movie
+        try
         {
-            UserId = userId,
-            TmdbId = request.TmdbId,
-            Title = request.Title,
-            Overview = request.Overview,
-            PosterPath = request.PosterPath,
-            ReleaseDate = request.ReleaseDate.HasValue
-                ? DateTime.SpecifyKind(request.ReleaseDate.Value, DateTimeKind.Utc)
-                : null
-        };
-
-        _db.Movies.Add(movie);
-        await _db.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetMyMovies), new { id = movie.Id }, new MovieDto
+            var userId = _currentUser.GetCurrentUserId();
+            var movie = await _movieService.AddMovieAsync(userId, request);
+            return CreatedAtAction(nameof(GetMyMovies), new { id = movie.Id }, movie);
+        }
+        catch (InvalidOperationException ex)
         {
-            Id = movie.Id,
-            TmdbId = movie.TmdbId,
-            Title = movie.Title,
-            Overview = movie.Overview,
-            PosterPath = movie.PosterPath,
-            ReleaseDate = movie.ReleaseDate,
-            CreatedAt = movie.CreatedAt
-        });
+            return Conflict(ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteMovie(int id)
     {
         var userId = _currentUser.GetCurrentUserId();
-        var movie = await _db.Movies.FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
-        if (movie is null) return NotFound();
-
-        _db.Movies.Remove(movie);
-        await _db.SaveChangesAsync();
-        return NoContent();
+        var deleted = await _movieService.DeleteMovieAsync(userId, id);
+        return deleted ? NoContent() : NotFound();
     }
 
     [HttpGet("popular")]
@@ -119,6 +82,13 @@ public class MoviesController : ControllerBase
         }
 
         var fresh = await _tmdbService.GetPopularMoviesAsync();
+
+        if (fresh.Count > 0)
+        {
+            var json = JsonSerializer.Serialize(fresh);
+            await _cache.SetAsync(_cacheSettings.PopularMoviesCacheKey, json);
+        }
+
         return Ok(fresh);
     }
 }

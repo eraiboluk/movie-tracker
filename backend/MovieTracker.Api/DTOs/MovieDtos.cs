@@ -15,7 +15,7 @@ public class AddMovieRequestDto
     public string Title { get; set; } = string.Empty;
     public string? Overview { get; set; }
     public string? PosterPath { get; set; }
-    public DateTime? ReleaseDate { get; set; }
+    public string? ReleaseDate { get; set; }
 }
 
 public class MovieDto

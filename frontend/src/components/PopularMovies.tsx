@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query'
 import {
   Box,
   Typography,
@@ -7,15 +6,12 @@ import {
   CardContent,
   Skeleton,
 } from '@mui/material'
-import { getPopularMovies, getPosterUrl } from '../api/movies'
-import { QUERY_KEYS, STALE_TIMES, POPULAR_MOVIES_POSTER_SIZE } from '../constants'
+import { getPosterUrl } from '../api/movies'
+import { POPULAR_MOVIES_POSTER_SIZE } from '../constants'
+import { usePopularMovies } from '../hooks/usePopularMovies'
 
 export function PopularMovies() {
-  const { data: movies, isLoading } = useQuery({
-    queryKey: [QUERY_KEYS.POPULAR_MOVIES],
-    queryFn: getPopularMovies,
-    staleTime: STALE_TIMES.POPULAR_MOVIES,
-  })
+  const { data: movies, isLoading } = usePopularMovies()
 
   return (
     <Box>

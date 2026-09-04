@@ -1,8 +1,5 @@
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   TextField,
-  Button,
   Card,
   CardContent,
   CardActions,
@@ -11,51 +8,29 @@ import {
   Stack,
   CircularProgress,
   Box,
+  Button,
 } from '@mui/material'
-import { searchMovies, addMovie, getPosterUrl } from '../api/movies'
-import { QUERY_KEYS, SEARCH_RESULT_POSTER_SIZE } from '../constants'
+import { getPosterUrl } from '../api/movies'
+import { SEARCH_RESULT_POSTER_SIZE } from '../constants'
+import { useMovieSearch } from '../hooks/useMovieSearch'
 
 export function MovieSearch() {
-  const [input, setInput] = useState('')
-  const [submittedQuery, setSubmittedQuery] = useState('')
-  const queryClient = useQueryClient()
-
-  const { data: results, isFetching } = useQuery({
-    queryKey: [QUERY_KEYS.SEARCH_MOVIES, submittedQuery],
-    queryFn: () => searchMovies(submittedQuery),
-    enabled: submittedQuery.length > 0,
-  })
-
-  const addMutation = useMutation({
-    mutationFn: addMovie,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MY_MOVIES] }),
-  })
+  const { input, setInput, movies, isFetching, addMovie, isAdding } =
+    useMovieSearch()
 
   return (
     <Stack spacing={2}>
-      <Stack direction="row" spacing={1}>
-        <TextField
-          fullWidth
-          label="Search film"
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) =>
-            e.key === 'Enter' && setSubmittedQuery(input.trim())
-          }
-        />
-        <Button
-          variant="outlined"
-          onClick={() => setSubmittedQuery(input.trim())}
-        >
-          Search
-        </Button>
-      </Stack>
+      <TextField
+        fullWidth
+        label="Search film"
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+      />
 
       {isFetching && <CircularProgress size={24} />}
 
       <Stack spacing={1}>
-        {results?.map((movie) => {
+        {movies.map((movie) => {
           const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
           return (
             <Card key={movie.tmdbId} sx={{ display: 'flex' }}>
@@ -109,8 +84,8 @@ export function MovieSearch() {
                 <CardActions>
                   <Button
                     size="small"
-                    onClick={() => addMutation.mutate(movie)}
-                    disabled={addMutation.isPending}
+                    onClick={() => addMovie(movie)}
+                    disabled={isAdding}
                   >
                     Add
                   </Button>
