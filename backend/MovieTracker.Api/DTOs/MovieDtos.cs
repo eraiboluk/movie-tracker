@@ -1,4 +1,6 @@
-﻿namespace MovieTracker.Api.DTOs;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace MovieTracker.Api.DTOs;
 
 public class TmdbMovieDto
 {
@@ -11,10 +13,16 @@ public class TmdbMovieDto
 
 public class AddMovieRequestDto
 {
+    [Range(1, int.MaxValue)]
     public int TmdbId { get; set; }
+    [Required]
+    [MaxLength(200)]
     public string Title { get; set; } = string.Empty;
+    [MaxLength(10000)]
     public string? Overview { get; set; }
+    [MaxLength(500)]
     public string? PosterPath { get; set; }
+    [MaxLength(50)]
     public string? ReleaseDate { get; set; }
 }
 
