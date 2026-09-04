@@ -19,25 +19,33 @@ public class MoviesController : ControllerBase
     private readonly ICurrentUserService _currentUser;
     private readonly ICacheService _cache;
     private readonly CacheSettings _cacheSettings;
+    private readonly TmdbSettings _tmdbSettings;
 
     public MoviesController(
         IMovieService movieService,
         ITmdbService tmdbService,
         ICurrentUserService currentUser,
         ICacheService cache,
-        IOptions<CacheSettings> cacheSettings)
+        IOptions<CacheSettings> cacheSettings,
+        IOptions<TmdbSettings> tmdbSettings)
     {
         _movieService = movieService;
         _tmdbService = tmdbService;
         _currentUser = currentUser;
         _cache = cache;
         _cacheSettings = cacheSettings.Value;
+        _tmdbSettings = tmdbSettings.Value;
     }
 
     [HttpGet("search")]
     public async Task<ActionResult<List<TmdbMovieDto>>> Search([FromQuery] string query, CancellationToken ct)
     {
-        if (string.IsNullOrWhiteSpace(query)) return BadRequest("query parametre cannot be empty");
+        if (string.IsNullOrWhiteSpace(query))
+            return BadRequest();
+
+        if (query.Length > _tmdbSettings.MaxSearchQueryLength)
+            return BadRequest("Arama sorgusu çok uzun.");
+
         return Ok(await _tmdbService.SearchMoviesAsync(query, ct));
     }
 
