@@ -28,18 +28,22 @@ export function useMovieSearch() {
 
     const trimmedInput = input.trim().toLowerCase()
 
-    const movies: TmdbMovie[] = (() => {
-    if (trimmedInput.length === 0) return []
+     const movies: TmdbMovie[] = (() => {
+        if (trimmedInput.length === 0) return []
 
-    if (trimmedInput.length < MIN_SEARCH_CHAR_LENGTH) {
-        return (
-        popularMovies?.filter((m) =>
-            m.title.toLowerCase().includes(trimmedInput)
+        const localMatches = popularMovies?.filter((m) =>
+        m.title.toLowerCase().includes(trimmedInput)
         ) ?? []
-        )
-    }
 
-    return searchResults ?? []
+        if (trimmedInput.length < MIN_SEARCH_CHAR_LENGTH || !searchResults) {
+        return localMatches
+        }
+
+        const localIds = new Set(localMatches.map(m => m.tmdbId))
+
+        const uniqueApiResults = searchResults.filter(apiMovie => !localIds.has(apiMovie.tmdbId))
+
+        return [...localMatches, ...uniqueApiResults]
     })()
 
     return {
