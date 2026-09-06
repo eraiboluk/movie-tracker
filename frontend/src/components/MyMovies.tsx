@@ -1,8 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { List, ListItem, ListItemText, IconButton, Typography } from '@mui/material'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Box, Typography, Skeleton } from '@mui/material'
 import { getMyMovies, deleteMovie } from '../api/movies'
 import { QUERY_KEYS } from '../constants'
+import { MovieCard } from './MovieCard'
 
 export function MyMovies() {
   const queryClient = useQueryClient()
@@ -18,25 +18,36 @@ export function MyMovies() {
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MY_MOVIES] }),
   })
 
-  if (isLoading) return <Typography>Loading...</Typography>
+  const deletingId = deleteMutation.isPending ? deleteMutation.variables : undefined
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 3 }}>
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} variant="rounded" sx={{ aspectRatio: '2/3', width: '100%' }} />
+        ))}
+      </Box>
+    )
+  }
+
+  if (!movies || movies.length === 0) {
+    return (
+      <Typography color="text.secondary" textAlign="center" sx={{ py: 4 }}>
+        Listende henüz film yok. Yukarıdaki arama kutusunu kullanarak film ekleyebilirsin.
+      </Typography>
+    )
+  }
 
   return (
-    <List>
-      {movies?.map((movie) => (
-        <ListItem
+    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 3 }}>
+      {movies.map((movie) => (
+        <MovieCard
           key={movie.id}
-          secondaryAction={
-            <IconButton
-              edge="end"
-              onClick={() => deleteMutation.mutate(movie.id)}
-            >
-              <DeleteIcon />
-            </IconButton>
-          }
-        >
-          <ListItemText primary={movie.title} secondary={movie.releaseDate} />
-        </ListItem>
+          movie={movie}
+          isDeleting={deletingId === movie.id}
+          onDelete={(id) => deleteMutation.mutate(id)}
+        />
       ))}
-    </List>
+    </Box>
   )
 }

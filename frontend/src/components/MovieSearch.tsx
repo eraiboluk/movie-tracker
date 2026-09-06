@@ -1,99 +1,128 @@
+import { useEffect, useRef, useState } from 'react'
 import {
   TextField,
-  Card,
-  CardContent,
-  CardActions,
-  CardMedia,
-  Typography,
-  Stack,
-  CircularProgress,
   Box,
-  Button,
+  Typography,
+  CircularProgress,
+  Paper,
+  InputAdornment,
+  Alert
 } from '@mui/material'
-import { getPosterUrl } from '../api/movies'
-import { SEARCH_RESULT_POSTER_SIZE } from '../constants'
+import SearchIcon from '@mui/icons-material/Search'
 import { useMovieSearch } from '../hooks/useMovieSearch'
+import { MovieSearchResultItem } from './MovieSearchResultItem'
 
 export function MovieSearch() {
-  const { input, setInput, movies, isFetching, addMovie, isAdding } = useMovieSearch()
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  const {
+    input,
+    setInput,
+    movies,
+    isFetching,
+    isSearchError,
+    addMovie,
+    addingMovieId,
+    addError,
+  } = useMovieSearch()
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+
+  const showDropdown = isOpen && input.trim().length > 0
 
   return (
-    <Stack spacing={2}>
+    <Box ref={containerRef} sx={{ position: 'relative', width: '100%', maxWidth: 600, mx: 'auto' }}>
       <TextField
         fullWidth
-        label="Search film"
+        placeholder="Search for movies..."
         value={input}
-        onChange={(e) => setInput(e.target.value)}
+        onChange={(e) => {
+          setInput(e.target.value)
+          setIsOpen(true)
+        }}
+        onFocus={() => setIsOpen(true)}
+        onKeyDown={(e) => {
+          if (e.key === 'Escape') setIsOpen(false)
+        }}
+        variant="outlined"
+        role="combobox"
+        aria-expanded={showDropdown}
+        aria-controls="movie-search-results"
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon color="action" />
+            </InputAdornment>
+          ),
+          endAdornment: isFetching ? (
+            <InputAdornment position="end">
+              <CircularProgress size={20} />
+            </InputAdornment>
+          ) : null,
+          sx: {
+            borderRadius: 8,
+            bgcolor: 'background.paper',
+            '& fieldset': { border: 'none' },
+            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+          }
+        }}
       />
 
-      {isFetching && <CircularProgress size={24} />}
+      {isSearchError && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          Arama sırasında bir hata oluştu. Lütfen tekrar deneyin.
+        </Alert>
+      )}
 
-      <Stack spacing={1}>
-        {movies.map((movie) => {
-          const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
-          return (
-            <Card key={movie.tmdbId} sx={{ display: 'flex' }}>
-              {posterUrl ? (
-                <CardMedia
-                  component="img"
-                  sx={{ width: 80, objectFit: 'cover' }}
-                  image={posterUrl}
-                  alt={movie.title}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    width: 80,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: 'grey.200',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    N/A
-                  </Typography>
-                </Box>
-              )}
-              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <CardContent sx={{ flex: '1 0 auto', pb: 0 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {movie.title}
-                  </Typography>
-                  {movie.releaseDate && (
-                    <Typography variant="body2" color="text.secondary">
-                      {movie.releaseDate.split('-')[0]}
-                    </Typography>
-                  )}
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {movie.overview}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => addMovie(movie)}
-                    disabled={isAdding}
-                  >
-                    Add
-                  </Button>
-                </CardActions>
-              </Box>
-            </Card>
-          )
-        })}
-      </Stack>
-    </Stack>
+      {showDropdown && (
+        <Paper
+          id="movie-search-results"
+          role="listbox"
+          sx={{
+            position: 'absolute',
+            top: '100%',
+            left: 0,
+            right: 0,
+            mt: 1,
+            maxHeight: 400,
+            overflowY: 'auto',
+            borderRadius: 4,
+            zIndex: 10,
+            boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)',
+            bgcolor: 'background.paper'
+          }}
+        >
+          {movies.length === 0 && !isFetching ? (
+            <Typography color="text.secondary" sx={{ p: 2 }}>
+              Sonuç bulunamadı
+            </Typography>
+          ) : (
+            movies.map((movie) => (
+              <MovieSearchResultItem
+                key={movie.tmdbId}
+                movie={movie}
+                isAdding={addingMovieId === movie.tmdbId}
+                onAdd={addMovie}
+              />
+            ))
+          )}
+        </Paper>
+      )}
+
+      {addError && (
+        <Alert severity="error" sx={{ mt: 1 }}>
+          Film eklenirken bir hata oluştu.
+        </Alert>
+      )}
+    </Box>
   )
 }
