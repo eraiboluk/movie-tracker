@@ -39,16 +39,20 @@ export function MovieSearchResultItem({ movie, isAdding, onAdd }: MovieSearchRes
       )}
 
       <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" fontWeight="500" noWrap>
+        <Typography variant="subtitle1" noWrap sx={{
+          fontWeight: "500"
+        }}>
           {movie.title}
         </Typography>
-        <Typography variant="body2" color="text.secondary">
+        <Typography variant="body2" sx={{
+          color: "text.secondary"
+        }}>
           {movie.releaseDate?.split('-')[0]}
         </Typography>
       </Box>
 
       <IconButton
-        aria-label={`${movie.title} filmini listeye ekle`}
+        aria-label={`Add ${movie.title} to the list`}
         onClick={() => onAdd(movie)}
         disabled={isAdding}
         sx={{
@@ -60,5 +64,5 @@ export function MovieSearchResultItem({ movie, isAdding, onAdd }: MovieSearchRes
         {isAdding ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
       </IconButton>
     </Box>
-  )
+  );
 }

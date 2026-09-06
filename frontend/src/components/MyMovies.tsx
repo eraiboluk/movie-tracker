@@ -32,8 +32,8 @@ export function MyMovies() {
 
   if (!movies || movies.length === 0) {
     return (
-      <Typography color="text.secondary" textAlign="center" sx={{ py: 4 }}>
-        Listende henüz film yok. Yukarıdaki arama kutusunu kullanarak film ekleyebilirsin.
+      <Typography color="text.secondary" sx={{ textAlign: 'center', py: 4 }}>
+        You don't have any movies in your list yet. You can add movies using the search box above.
       </Typography>
     )
   }

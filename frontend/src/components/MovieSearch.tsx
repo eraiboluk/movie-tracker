@@ -57,29 +57,31 @@ export function MovieSearch() {
         role="combobox"
         aria-expanded={showDropdown}
         aria-controls="movie-search-results"
-        InputProps={{
-          startAdornment: (
-            <InputAdornment position="start">
-              <SearchIcon color="action" />
-            </InputAdornment>
-          ),
-          endAdornment: isFetching ? (
-            <InputAdornment position="end">
-              <CircularProgress size={20} />
-            </InputAdornment>
-          ) : null,
-          sx: {
-            borderRadius: 8,
-            bgcolor: 'background.paper',
-            '& fieldset': { border: 'none' },
-            boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+        slotProps={{
+          input: {
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon color="action" />
+              </InputAdornment>
+            ),
+            endAdornment: isFetching ? (
+              <InputAdornment position="end">
+                <CircularProgress size={20} />
+              </InputAdornment>
+            ) : null,
+            sx: {
+              borderRadius: 8,
+              bgcolor: 'background.paper',
+              '& fieldset': { border: 'none' },
+              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+            }
           }
         }}
       />
 
       {isSearchError && (
         <Alert severity="error" sx={{ mt: 1 }}>
-          Arama sırasında bir hata oluştu. Lütfen tekrar deneyin.
+          An error occurred while searching. Please try again.
         </Alert>
       )}
 
@@ -102,8 +104,12 @@ export function MovieSearch() {
           }}
         >
           {movies.length === 0 && !isFetching ? (
-            <Typography color="text.secondary" sx={{ p: 2 }}>
-              Sonuç bulunamadı
+            <Typography
+              sx={{
+                color: "text.secondary",
+                p: 2
+              }}>
+              No results found
             </Typography>
           ) : (
             movies.map((movie) => (
@@ -120,9 +126,9 @@ export function MovieSearch() {
 
       {addError && (
         <Alert severity="error" sx={{ mt: 1 }}>
-          Film eklenirken bir hata oluştu.
+          An error occurred while adding the movie.
         </Alert>
       )}
     </Box>
-  )
+  );
 }

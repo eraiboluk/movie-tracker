@@ -69,13 +69,18 @@ export function PopularMovies({ pixelsPerSecond = 40, onMovieClick }: PopularMov
                 <CardMedia component="img" height="100%" image={posterUrl} alt={movie.title} sx={{ objectFit: 'cover' }} />
               ) : (
                 <Box sx={{ height: '100%', bgcolor: 'grey.800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Typography variant="caption" textAlign="center" p={1}>{movie.title}</Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      textAlign: "center",
+                      p: 1
+                    }}>{movie.title}</Typography>
                 </Box>
               )}
             </Card>
-          )
+          );
         })}
       </Box>
     </Box>
-  )
+  );
 }

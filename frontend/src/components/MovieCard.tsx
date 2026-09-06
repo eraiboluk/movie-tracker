@@ -1,18 +1,13 @@
 import { Card, CardMedia, Box, Typography, IconButton, CircularProgress } from '@mui/material'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { getPosterUrl } from '../api/movies'
+import type { Movie } from '../api/movies'
 import { DEFAULT_POSTER_SIZE } from '../constants'
 
-interface MyMovie {
-  id: number | string
-  title: string
-  posterPath: string | null
-}
-
 interface MovieCardProps {
-  movie: MyMovie
+  movie: Movie
   isDeleting: boolean
-  onDelete: (id: MyMovie['id']) => void
+  onDelete: (id: Movie['id']) => void
 }
 
 export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
@@ -32,13 +27,13 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
         <CardMedia component="img" height="100%" image={posterUrl} alt={movie.title} sx={{ objectFit: 'cover' }} />
       ) : (
         <Box sx={{ height: '100%', bgcolor: 'grey.800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <Typography variant="caption" textAlign="center" p={1}>{movie.title}</Typography>
+          <Typography variant="caption" sx={{ textAlign: 'center', p: 1 }}>{movie.title}</Typography>
         </Box>
       )}
 
       <IconButton
         className="delete-btn"
-        aria-label={`${movie.title} filmini listeden çıkar`}
+        aria-label={`Remove ${movie.title} from the list`}
         onClick={() => onDelete(movie.id)}
         disabled={isDeleting}
         size="small"
@@ -51,7 +46,6 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
           opacity: 0,
           transition: 'opacity 0.2s',
           '&:hover': { bgcolor: 'error.main' },
-          // Touch cihazlarda gerçek "hover" olmadığı için buton hep görünür kalsın
           '@media (hover: none)': { opacity: 1 },
         }}
       >
@@ -59,7 +53,7 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
       </IconButton>
 
       <Box sx={{ position: 'absolute', bottom: 0, width: '100%', bgcolor: 'rgba(0,0,0,0.8)', color: 'white', p: 1.5, textAlign: 'center' }}>
-        <Typography variant="caption" noWrap display="block" fontWeight="bold">
+        <Typography variant="caption" noWrap sx={{ display: 'block', fontWeight: 'bold' }}>
           {movie.title}
         </Typography>
       </Box>
