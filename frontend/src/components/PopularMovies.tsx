@@ -1,25 +1,44 @@
-import { Box, Card, CardMedia, Skeleton, Typography } from '@mui/material'
-import { keyframes } from '@mui/system'
+import { useRef, useState, useCallback } from 'react'
+import { Box, Card, CardMedia, Skeleton, Typography, IconButton } from '@mui/material'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { getPosterUrl } from '../api/movies'
 import { POPULAR_MOVIES_POSTER_SIZE } from '../constants'
 import { usePopularMovies } from '../hooks/usePopularMovies'
 import type { TmdbMovie } from '../api/movies'
 
-const marquee = keyframes`
-  0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
-`
-
-const CARD_WIDTH = 150
-const CARD_GAP = 16
-
 interface PopularMoviesProps {
-  pixelsPerSecond?: number
   onMovieClick?: (movie: TmdbMovie) => void
 }
 
-export function PopularMovies({ pixelsPerSecond = 40, onMovieClick }: PopularMoviesProps) {
+export function PopularMovies({onMovieClick }: PopularMoviesProps) {
   const { data: movies, isLoading } = usePopularMovies()
+
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+
+  const updateScrollButtons = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 0)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+
+  }, [])
+
+  const initScrollCheck = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      scrollRef.current = node
+      setCanScrollRight(node.scrollWidth > node.clientWidth)
+    }
+  }, [])
+
+  const scroll = (direction: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    const amount = direction === 'left' ? -el.clientWidth : el.clientWidth
+    el.scrollBy({ left: amount, behavior: 'smooth' })
+  }
 
   if (isLoading) {
     return (
@@ -33,35 +52,55 @@ export function PopularMovies({ pixelsPerSecond = 40, onMovieClick }: PopularMov
 
   if (!movies || movies.length === 0) return null
 
-  const repeatedMovies = [...movies, ...movies]
-  const totalWidth = movies.length * (CARD_WIDTH + CARD_GAP)
-  const duration = totalWidth / pixelsPerSecond
-
   return (
-    <Box sx={{ overflow: 'hidden', display: 'flex', width: '100%', py: 1 }}>
+    <Box sx={{ position: 'relative' }}>
+      {canScrollLeft && (
+        <IconButton
+          onClick={() => scroll('left')}
+          sx={{
+            position: 'absolute',
+            left: -20,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 2,
+            bgcolor: 'background.paper',
+            boxShadow: 3,
+            '&:hover': { bgcolor: 'background.default' },
+          }}
+        >
+          <ChevronLeftIcon />
+        </IconButton>
+      )}
+
       <Box
+        ref={initScrollCheck}
+        onScroll={updateScrollButtons}
         sx={{
           display: 'flex',
           gap: 2,
-          paddingRight: 2,
-          animation: `${marquee} ${duration}s linear infinite`,
-          '&:hover': { animationPlayState: 'paused' },
-          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
+          overflowX: 'auto',
+          py: 1,
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        {repeatedMovies.map((movie, index) => {
+        {movies.map((movie) => {
           const posterUrl = getPosterUrl(movie.posterPath, POPULAR_MOVIES_POSTER_SIZE)
           return (
             <Card
-              key={`${movie.tmdbId}-${index}`}
+              key={movie.tmdbId}
               onClick={onMovieClick ? () => onMovieClick(movie) : undefined}
               sx={{
                 width: 150,
                 height: 225,
                 flexShrink: 0,
                 borderRadius: 2,
+                scrollSnapAlign: 'start',
                 cursor: onMovieClick ? 'pointer' : 'default',
-                transition: 'transform 0.3s ease',
+                transition: (theme) => theme.transitions.create('transform', {
+                  duration: theme.transitions.duration.standard,
+                }),
                 '&:hover': { transform: 'scale(1.05)' },
               }}
             >
@@ -81,6 +120,24 @@ export function PopularMovies({ pixelsPerSecond = 40, onMovieClick }: PopularMov
           );
         })}
       </Box>
+
+      {canScrollRight && (
+        <IconButton
+          onClick={() => scroll('right')}
+          sx={{
+            position: 'absolute',
+            right: -20,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 2,
+            bgcolor: 'background.paper',
+            boxShadow: 3,
+            '&:hover': { bgcolor: 'background.default' },
+          }}
+        >
+          <ChevronRightIcon />
+        </IconButton>
+      )}
     </Box>
   );
 }

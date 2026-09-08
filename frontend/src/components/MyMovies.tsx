@@ -3,6 +3,13 @@ import { Box, Typography, Skeleton } from '@mui/material'
 import { getMyMovies, deleteMovie } from '../api/movies'
 import { QUERY_KEYS } from '../constants'
 import { MovieCard } from './MovieCard'
+import type { SxProps, Theme } from '@mui/material'
+
+const movieGridSx: SxProps<Theme> = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
+  gap: 3,
+}
 
 export function MyMovies() {
   const queryClient = useQueryClient()
@@ -22,7 +29,7 @@ export function MyMovies() {
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 3 }}>
+      <Box sx={movieGridSx}>
         {Array.from({ length: 6 }).map((_, i) => (
           <Skeleton key={i} variant="rounded" sx={{ aspectRatio: '2/3', width: '100%' }} />
         ))}
@@ -39,7 +46,7 @@ export function MyMovies() {
   }
 
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: 3 }}>
+    <Box sx={movieGridSx}>
       {movies.map((movie) => (
         <MovieCard
           key={movie.id}

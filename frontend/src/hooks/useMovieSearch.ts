@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useCallback } from 'react'
 import { useQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query'
 import { searchMovies, addMovie } from '../api/movies'
 import type { TmdbMovie } from '../api/movies'
@@ -8,6 +8,17 @@ import { QUERY_KEYS, STALE_TIMES, MIN_SEARCH_CHAR_LENGTH, DEBOUNCE_DELAY_MS } fr
 
 export function useMovieSearch() {
   const [input, setInput] = useState('')
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean
+    message: string
+    severity: 'error' | 'warning'
+  }>({ open: false, message: '', severity: 'error' })
+
+  const closeSnackbar = useCallback(() => {
+    setSnackbar((prev) => ({ ...prev, open: false }))
+  }, [])
+
   const debouncedQuery = useDebounce(input.trim().toLowerCase(), DEBOUNCE_DELAY_MS)
   const queryClient = useQueryClient()
 
@@ -29,6 +40,14 @@ export function useMovieSearch() {
     mutationFn: addMovie,
     onSuccess: () =>
       queryClient.invalidateQueries({ queryKey: [QUERY_KEYS.MY_MOVIES] }),
+    onError: (error) => {
+      const status = (error as import('axios').AxiosError)?.response?.status
+      if (status === 409) {
+        setSnackbar({ open: true, message: 'This movie is already in your list.', severity: 'warning' })
+      } else {
+        setSnackbar({ open: true, message: 'An error occurred while adding the movie.', severity: 'error' })
+      }
+    },
   })
 
   const trimmedInput = input.trim().toLowerCase()
@@ -51,13 +70,14 @@ export function useMovieSearch() {
   }, [trimmedInput, popularMovies, searchResults])
 
   return {
+    isFetching: trimmedInput.length >= MIN_SEARCH_CHAR_LENGTH && isFetching,
+    isSearchError,
     input,
     setInput,
     movies,
-    isFetching: trimmedInput.length >= MIN_SEARCH_CHAR_LENGTH && isFetching,
-    isSearchError,
     addMovie: addMutation.mutate,
     addingMovieId: addMutation.isPending ? addMutation.variables?.tmdbId : undefined,
-    addError: addMutation.isError,
+    snackbar,
+    closeSnackbar,
   }
 }

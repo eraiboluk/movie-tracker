@@ -1,4 +1,11 @@
-import { Box, Typography, IconButton, CircularProgress } from '@mui/material'
+import {
+  ListItemButton,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  IconButton,
+  CircularProgress
+} from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import { getPosterUrl } from '../api/movies'
 import type { TmdbMovie } from '../api/movies'
@@ -8,61 +15,44 @@ interface MovieSearchResultItemProps {
   movie: TmdbMovie
   isAdding: boolean
   onAdd: (movie: TmdbMovie) => void
+  liProps?: React.HTMLAttributes<HTMLLIElement>
 }
 
-export function MovieSearchResultItem({ movie, isAdding, onAdd }: MovieSearchResultItemProps) {
+export function MovieSearchResultItem({ movie, isAdding, onAdd, liProps }: MovieSearchResultItemProps) {
   const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
 
   return (
-    <Box
-      role="option"
-      aria-selected={false}
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        p: 2,
-        borderBottom: '1px solid',
-        borderColor: 'divider',
-        '&:last-child': { borderBottom: 'none' },
-        '&:hover': { bgcolor: 'action.hover' }
-      }}
+    <ListItemButton
+      component="li"
+      {...liProps}
+      divider
+      disabled={isAdding}
     >
-      {posterUrl ? (
-        <Box
-          component="img"
-          src={posterUrl}
+      <ListItemAvatar>
+        <Avatar
+          variant="rounded"
+          src={posterUrl ?? undefined}
           alt={movie.title}
-          sx={{ width: 50, height: 75, objectFit: 'cover', borderRadius: 1, mr: 2 }}
+          sx={{ width: 50, height: 75, borderRadius: 1 }}
         />
-      ) : (
-        <Box sx={{ width: 50, height: 75, bgcolor: 'grey.800', borderRadius: 1, mr: 2 }} />
-      )}
-
-      <Box sx={{ flex: 1, minWidth: 0 }}>
-        <Typography variant="subtitle1" noWrap sx={{
-          fontWeight: "500"
-        }}>
-          {movie.title}
-        </Typography>
-        <Typography variant="body2" sx={{
-          color: "text.secondary"
-        }}>
-          {movie.releaseDate?.split('-')[0]}
-        </Typography>
-      </Box>
-
+      </ListItemAvatar>
+      <ListItemText
+        primary={movie.title}
+        secondary={movie.releaseDate?.split('-')[0]}
+        slotProps={{ primary: { noWrap: true, sx: { fontWeight: 500 } } }}
+      />
       <IconButton
-        aria-label={`Add ${movie.title} to the list`}
-        onClick={() => onAdd(movie)}
+        aria-label={`Add ${movie.title}`}
+        onClick={(e) => { e.stopPropagation(); onAdd(movie) }}
         disabled={isAdding}
         sx={{
           bgcolor: 'primary.dark',
-          color: 'white',
-          '&:hover': { bgcolor: 'primary.main' }
+          color: 'common.white',
+          '&:hover': { bgcolor: 'primary.main' },
         }}
       >
         {isAdding ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
       </IconButton>
-    </Box>
+    </ListItemButton>
   );
 }

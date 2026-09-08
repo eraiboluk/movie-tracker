@@ -42,9 +42,11 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
           top: 8,
           right: 8,
           bgcolor: 'error.dark',
-          color: 'white',
+          color: 'common.white',
           opacity: 0,
-          transition: 'opacity 0.2s',
+          transition: (theme) => theme.transitions.create('opacity', {
+            duration: theme.transitions.duration.short,
+          }),
           '&:hover': { bgcolor: 'error.main' },
           '@media (hover: none)': { opacity: 1 },
         }}
@@ -52,7 +54,7 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
         {isDeleting ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon fontSize="small" />}
       </IconButton>
 
-      <Box sx={{ position: 'absolute', bottom: 0, width: '100%', bgcolor: 'rgba(0,0,0,0.8)', color: 'white', p: 1.5, textAlign: 'center' }}>
+      <Box sx={{ position: 'absolute', bottom: 0, width: '100%', bgcolor: 'rgba(0,0,0,0.8)', color: 'common.white', p: 1.5, textAlign: 'center' }}>
         <Typography variant="caption" noWrap sx={{ display: 'block', fontWeight: 'bold' }}>
           {movie.title}
         </Typography>
