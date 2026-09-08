@@ -1,99 +1,89 @@
-import {
-  TextField,
-  Card,
-  CardContent,
-  CardActions,
-  CardMedia,
-  Typography,
-  Stack,
-  CircularProgress,
-  Box,
-  Button,
-} from '@mui/material'
-import { getPosterUrl } from '../api/movies'
-import { SEARCH_RESULT_POSTER_SIZE } from '../constants'
+import { Autocomplete, TextField, InputAdornment, Alert, Snackbar } from '@mui/material'
+import SearchIcon from '@mui/icons-material/Search'
 import { useMovieSearch } from '../hooks/useMovieSearch'
+import { MovieSearchResultItem } from './MovieSearchResultItem'
 
 export function MovieSearch() {
-  const { input, setInput, movies, isFetching, addMovie, isAdding } = useMovieSearch()
+  const {
+    input,
+    setInput,
+    movies,
+    isFetching,
+    isSearchError,
+    addMovie,
+    addingMovieId,
+    snackbar,
+    closeSnackbar,
+  } = useMovieSearch()
 
   return (
-    <Stack spacing={2}>
-      <TextField
-        fullWidth
-        label="Search film"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-
-      {isFetching && <CircularProgress size={24} />}
-
-      <Stack spacing={1}>
-        {movies.map((movie) => {
-          const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
+    <>
+      <Autocomplete
+        freeSolo
+        options={movies}
+        getOptionLabel={(option) =>
+          typeof option === 'string' ? option : option.title
+        }
+        inputValue={input}
+        onInputChange={(_e, value, reason) => {
+          if (reason !== 'reset') setInput(value)
+        }}
+        filterOptions={(x) => x}
+        loading={isFetching}
+        loadingText="Searching..."
+        noOptionsText="No results found"
+        renderOption={(_props, movie) => {
+          const { key, ...rest } = _props
           return (
-            <Card key={movie.tmdbId} sx={{ display: 'flex' }}>
-              {posterUrl ? (
-                <CardMedia
-                  component="img"
-                  sx={{ width: 80, objectFit: 'cover' }}
-                  image={posterUrl}
-                  alt={movie.title}
-                />
-              ) : (
-                <Box
-                  sx={{
-                    width: 80,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    bgcolor: 'grey.200',
-                    flexShrink: 0,
-                  }}
-                >
-                  <Typography variant="caption" color="text.secondary">
-                    N/A
-                  </Typography>
-                </Box>
-              )}
-              <Box sx={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-                <CardContent sx={{ flex: '1 0 auto', pb: 0 }}>
-                  <Typography variant="subtitle1" sx={{ fontWeight: 'bold' }}>
-                    {movie.title}
-                  </Typography>
-                  {movie.releaseDate && (
-                    <Typography variant="body2" color="text.secondary">
-                      {movie.releaseDate.split('-')[0]}
-                    </Typography>
-                  )}
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                    sx={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      display: '-webkit-box',
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: 'vertical',
-                    }}
-                  >
-                    {movie.overview}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <Button
-                    size="small"
-                    onClick={() => addMovie(movie)}
-                    disabled={isAdding}
-                  >
-                    Add
-                  </Button>
-                </CardActions>
-              </Box>
-            </Card>
+            <MovieSearchResultItem
+              key={key}
+              liProps={rest}
+              movie={movie}
+              isAdding={addingMovieId === movie.tmdbId}
+              onAdd={addMovie}
+            />
           )
-        })}
-      </Stack>
-    </Stack>
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            placeholder="Search for movies..."
+            slotProps={{
+              ...params.slotProps,
+              input: {
+                ...params.slotProps.input,
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+                sx: {
+                  borderRadius: 8,
+                  bgcolor: 'background.paper',
+                  '& fieldset': { border: 'none' },
+                  boxShadow: 1,
+                },
+              },
+            }}
+          />
+        )}
+        sx={{ maxWidth: 600, mx: 'auto' }}
+      />
+      {isSearchError && (
+        <Alert severity="error" sx={{ mt: 1, maxWidth: 600, mx: 'auto' }}>
+          An error occurred while searching. Please try again.
+        </Alert>
+      )}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={closeSnackbar}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={closeSnackbar} severity={snackbar.severity} variant="filled">
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   )
 }
