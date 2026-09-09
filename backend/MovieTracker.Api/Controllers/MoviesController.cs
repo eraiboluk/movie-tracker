@@ -38,7 +38,7 @@ public class MoviesController : ControllerBase
     }
 
     [HttpGet("search")]
-    public async Task<ActionResult<List<TmdbMovieDto>>> Search([FromQuery] string query, CancellationToken ct)
+    public async Task<ActionResult<TmdbSearchResultDto>> Search([FromQuery] string query, [FromQuery] int page = 1, CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(query))
             return BadRequest();
@@ -46,7 +46,9 @@ public class MoviesController : ControllerBase
         if (query.Length > _tmdbSettings.MaxSearchQueryLength)
             return BadRequest("Arama sorgusu çok uzun.");
 
-        return Ok(await _tmdbService.SearchMoviesAsync(query, ct));
+        if (page < 1) page = 1;
+
+        return Ok(await _tmdbService.SearchMoviesAsync(query, page, ct));
     }
 
     [HttpGet]

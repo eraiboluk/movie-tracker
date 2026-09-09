@@ -36,3 +36,10 @@ public class MovieDto
     public DateTime? ReleaseDate { get; set; }
     public DateTime CreatedAt { get; set; }
 }
+
+public class TmdbSearchResultDto
+{
+    public List<TmdbMovieDto> Results { get; set; } = [];
+    public int Page { get; set; }
+    public int TotalPages { get; set; }
+}

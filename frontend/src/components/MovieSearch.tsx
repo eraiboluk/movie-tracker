@@ -14,6 +14,9 @@ export function MovieSearch() {
     addingMovieId,
     snackbar,
     closeSnackbar,
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
   } = useMovieSearch()
 
   return (
@@ -32,6 +35,20 @@ export function MovieSearch() {
         loading={isFetching}
         loadingText="Searching..."
         noOptionsText="No results found"
+        slotProps={{
+          listbox: {
+            onScroll: (event: React.SyntheticEvent) => {
+              const listbox = event.currentTarget
+              if (
+                hasNextPage &&
+                !isFetchingNextPage &&
+                listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - 50
+              ) {
+                fetchNextPage()
+              }
+            },
+          },
+        }}
         renderOption={(_props, movie) => {
           const { key, ...rest } = _props
           return (
