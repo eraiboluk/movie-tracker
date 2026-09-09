@@ -3,7 +3,7 @@ import { Box, Card, CardMedia, Skeleton, Typography, IconButton } from '@mui/mat
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { getPosterUrl } from '../api/movies'
-import { POPULAR_MOVIES_POSTER_SIZE } from '../constants'
+import { POPULAR_MOVIES_POSTER_SIZE, UI } from '../constants'
 import { usePopularMovies } from '../hooks/usePopularMovies'
 import type { TmdbMovie } from '../api/movies'
 
@@ -43,7 +43,7 @@ export function PopularMovies({onMovieClick }: PopularMoviesProps) {
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden' }}>
-        {Array.from({ length: 10 }).map((_, i) => (
+        {Array.from({ length: UI.POPULAR_MOVIES_SKELETON_COUNT }).map((_, i) => (
           <Skeleton key={i} variant="rounded" width={150} height={225} sx={{ flexShrink: 0 }} />
         ))}
       </Box>

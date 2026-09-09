@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MovieTracker.Api.Models;
 
 namespace MovieTracker.Api.Data;
@@ -36,6 +36,12 @@ public class MovieTrackerDbContext : DbContext
     private void SetCreatedAt()
     {
         foreach (var entry in ChangeTracker.Entries<Movie>()
+            .Where(e => e.State == EntityState.Added))
+        {
+            entry.Entity.CreatedAt = DateTime.UtcNow;
+        }
+
+        foreach (var entry in ChangeTracker.Entries<Review>()
             .Where(e => e.State == EntityState.Added))
         {
             entry.Entity.CreatedAt = DateTime.UtcNow;

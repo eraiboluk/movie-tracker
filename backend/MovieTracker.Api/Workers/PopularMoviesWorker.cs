@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MovieTracker.Api.Options;
 using MovieTracker.Api.Services;
 using System.Text.Json;
@@ -35,7 +35,8 @@ public class PopularMoviesWorker : BackgroundService
 
                 var movies = await tmdbService.GetPopularMoviesAsync();
                 var json = JsonSerializer.Serialize(movies);
-                await _cache.SetAsync(_settings.PopularMoviesCacheKey, json);
+                await _cache.SetAsync(_settings.PopularMoviesCacheKey, json,
+                    TimeSpan.FromHours(_settings.PopularMoviesCacheTtlHours));
 
                 _logger.LogInformation(
                     "Popular movies cache refreshed. {Count} movies cached.", movies.Count);

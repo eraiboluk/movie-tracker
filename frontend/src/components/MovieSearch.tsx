@@ -2,6 +2,7 @@ import { Autocomplete, TextField, InputAdornment, Alert, Snackbar } from '@mui/m
 import SearchIcon from '@mui/icons-material/Search'
 import { useMovieSearch } from '../hooks/useMovieSearch'
 import { MovieSearchResultItem } from './MovieSearchResultItem'
+import { UI } from '../constants'
 
 export function MovieSearch() {
   const {
@@ -14,6 +15,9 @@ export function MovieSearch() {
     addingMovieId,
     snackbar,
     closeSnackbar,
+    fetchNextPage, 
+    hasNextPage, 
+    isFetchingNextPage,
   } = useMovieSearch()
 
   return (
@@ -32,11 +36,25 @@ export function MovieSearch() {
         loading={isFetching}
         loadingText="Searching..."
         noOptionsText="No results found"
+        slotProps={{
+          listbox: {
+            onScroll: (event: React.SyntheticEvent) => {
+              const listbox = event.currentTarget
+              if (
+                hasNextPage &&
+                !isFetchingNextPage &&
+                listbox.scrollTop + listbox.clientHeight >= listbox.scrollHeight - UI.INFINITE_SCROLL_OFFSET_PX
+              ) {
+                fetchNextPage()
+              }
+            },
+          },
+        }}
         renderOption={(_props, movie) => {
           const { key, ...rest } = _props
           return (
             <MovieSearchResultItem
-              key={key}
+              key={movie.tmdbId}
               liProps={rest}
               movie={movie}
               isAdding={addingMovieId === movie.tmdbId}
@@ -76,7 +94,7 @@ export function MovieSearch() {
       )}
       <Snackbar
         open={snackbar.open}
-        autoHideDuration={4000}
+        autoHideDuration={UI.SNACKBAR_AUTO_HIDE_DURATION_MS}
         onClose={closeSnackbar}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >

@@ -30,44 +30,47 @@ public class TmdbService : ITmdbService
         _apiKey = _tmdbSettings.ApiKey;
     }
 
-    public async Task<List<TmdbMovieDto>> SearchMoviesAsync(string query, CancellationToken ct = default)
+    public async Task<TmdbSearchResultDto> SearchMoviesAsync(string query, int page = 1, CancellationToken ct = default)
     {
         var normalized = NormalizeQuery(query);
-        var cacheKey = $"{_cacheSettings.SearchCacheKeyPrefix}{normalized}";
+        var cacheKey = $"{_cacheSettings.SearchCacheKeyPrefix}{normalized}:p{page}";
 
         var cached = await _cache.GetAsync(cacheKey);
         if (cached is not null)
         {
-            return JsonSerializer.Deserialize<List<TmdbMovieDto>>(cached) ?? [];
+            return JsonSerializer.Deserialize<TmdbSearchResultDto>(cached)!;
         }
 
         try
         {
             var response = await _httpClient.GetFromJsonAsync<TmdbSearchResponse>(
-                $"search/movie?query={Uri.
-                    EscapeDataString(normalized)}&api_key={_apiKey}&language={_tmdbSettings.Language}", ct);
+                $"search/movie?query={Uri.EscapeDataString(normalized)}&api_key={_apiKey}&language={_tmdbSettings.Language}&page={page}", ct);
 
-            var results = response?.Results.Select(r => new TmdbMovieDto
+            var result = new TmdbSearchResultDto
             {
-                TmdbId = r.Id,
-                Title = r.Title,
-                Overview = r.Overview,
-                PosterPath = r.PosterPath,
-                ReleaseDate = r.ReleaseDate
-            }).ToList() ?? [];
+                Page = page,
+                TotalPages = response?.TotalPages ?? 0,
+                Results = response?.Results.Select(r => new TmdbMovieDto
+                {
+                    TmdbId = r.Id,
+                    Title = r.Title,
+                    Overview = r.Overview,
+                    PosterPath = r.PosterPath,
+                    ReleaseDate = r.ReleaseDate
+                }).ToList() ?? []
+            };
 
-            if (results.Count > 0)
+            if (result.Results.Count > 0)
             {
-                var json = JsonSerializer.Serialize(results);
-                await _cache.SetAsync(cacheKey, json, TimeSpan.FromHours(_cacheSettings.
-                    SearchCacheTtlHours));
+                var json = JsonSerializer.Serialize(result);
+                await _cache.SetAsync(cacheKey, json, TimeSpan.FromHours(_cacheSettings.SearchCacheTtlHours));
             }
 
-            return results;
+            return result;
         }
         catch (HttpRequestException)
         {
-            return [];
+            return new TmdbSearchResultDto { Page = page, TotalPages = 0 };
         }
     }
 
@@ -104,6 +107,8 @@ public class TmdbService : ITmdbService
     private class TmdbSearchResponse
     {
         public List<TmdbResult> Results { get; set; } = new();
+        [JsonPropertyName("total_pages")]
+        public int TotalPages { get; set; }
     }
 
     private class TmdbResult

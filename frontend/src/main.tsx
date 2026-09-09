@@ -5,6 +5,8 @@ import { ThemeProvider, CssBaseline } from '@mui/material'
 import { theme } from './themes/theme'
 import App from './App'
 
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+
 const queryClient = new QueryClient()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -14,6 +16,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <CssBaseline />
         <App />
       </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
     </QueryClientProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 )
