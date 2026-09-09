@@ -1,4 +1,4 @@
-﻿namespace MovieTracker.Api.Options;
+namespace MovieTracker.Api.Options;
 
 public class CacheSettings
 {
@@ -8,4 +8,5 @@ public class CacheSettings
     public string SearchCacheKeyPrefix { get; set; } = "search:";
     public int PopularMoviesPageCount { get; set; } = 5;
     public int PopularMoviesRefreshHour { get; set; } = 0;
+    public int PopularMoviesCacheTtlHours { get; set; } = 25;
 }

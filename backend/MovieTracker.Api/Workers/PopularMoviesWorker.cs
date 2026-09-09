@@ -36,7 +36,7 @@ public class PopularMoviesWorker : BackgroundService
                 var movies = await tmdbService.GetPopularMoviesAsync();
                 var json = JsonSerializer.Serialize(movies);
                 await _cache.SetAsync(_settings.PopularMoviesCacheKey, json,
-                    TimeSpan.FromHours(25));
+                    TimeSpan.FromHours(_settings.PopularMoviesCacheTtlHours));
 
                 _logger.LogInformation(
                     "Popular movies cache refreshed. {Count} movies cached.", movies.Count);

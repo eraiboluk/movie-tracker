@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Box, Typography, Skeleton } from '@mui/material'
 import { getMyMovies, deleteMovie } from '../api/movies'
-import { QUERY_KEYS } from '../constants'
+import { QUERY_KEYS, UI } from '../constants'
 import { MovieCard } from './MovieCard'
 import type { SxProps, Theme } from '@mui/material'
 
@@ -30,7 +30,7 @@ export function MyMovies() {
   if (isLoading) {
     return (
       <Box sx={movieGridSx}>
-        {Array.from({ length: 6 }).map((_, i) => (
+        {Array.from({ length: UI.MY_MOVIES_SKELETON_COUNT }).map((_, i) => (
           <Skeleton key={i} variant="rounded" sx={{ aspectRatio: '2/3', width: '100%' }} />
         ))}
       </Box>

@@ -101,7 +101,7 @@ public class MoviesController : ControllerBase
         {
             var json = JsonSerializer.Serialize(fresh);
             await _cache.SetAsync(_cacheSettings.PopularMoviesCacheKey, json,
-                TimeSpan.FromHours(25));
+                TimeSpan.FromHours(_cacheSettings.PopularMoviesCacheTtlHours));
         }
 
         return Ok(fresh);
