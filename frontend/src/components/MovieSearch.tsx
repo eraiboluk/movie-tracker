@@ -53,7 +53,7 @@ export function MovieSearch() {
           const { key, ...rest } = _props
           return (
             <MovieSearchResultItem
-              key={key}
+              key={movie.tmdbId}
               liProps={rest}
               movie={movie}
               isAdding={addingMovieId === movie.tmdbId}

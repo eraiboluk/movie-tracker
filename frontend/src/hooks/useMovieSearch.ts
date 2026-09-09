@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react'
-import { useInfiniteQuery, useQueryClient, useMutation } from '@tanstack/react-query'
+import { useInfiniteQuery, useQueryClient, useMutation, keepPreviousData } from '@tanstack/react-query'
 import { searchMovies, addMovie } from '../api/movies'
 import type { TmdbMovie } from '../api/movies'
 import { useDebounce } from './useDebounce'
@@ -38,6 +38,7 @@ export function useMovieSearch() {
       lastPage.page < lastPage.totalPages ? lastPage.page + 1 : undefined,
     enabled: debouncedQuery.length >= MIN_SEARCH_CHAR_LENGTH,
     staleTime: STALE_TIMES.SEARCH,
+    placeholderData: keepPreviousData,
   })
 
   const searchResults = useMemo(
@@ -75,7 +76,7 @@ export function useMovieSearch() {
   }, [trimmedInput, popularMovies, searchResults])
 
   return {
-    isFetching: trimmedInput.length >= MIN_SEARCH_CHAR_LENGTH && isFetching,
+    isFetching: trimmedInput.length >= MIN_SEARCH_CHAR_LENGTH && isFetching && !isFetchingNextPage,
     isSearchError,
     input,
     setInput,
