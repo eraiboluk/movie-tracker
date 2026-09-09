@@ -1,32 +1,53 @@
-import { Container, Typography, Divider } from '@mui/material'
-import { PopularMovies } from './components/PopularMovies'
+import { Box, Container, Typography } from '@mui/material'
 import { MovieSearch } from './components/MovieSearch'
+import { PopularMovies } from './components/PopularMovies'
 import { MyMovies } from './components/MyMovies'
 
 function App() {
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
+    <Container maxWidth="lg" sx={{ py: 6, minHeight: '100vh' }}>
+      <Typography
+        variant="h3"
+        gutterBottom
+        sx={{
+          fontWeight: "bold",
+          textAlign: "center",
+          color: "primary.main"
+        }}>
         Movie Tracker
       </Typography>
 
-      <PopularMovies />
+      <Box sx={{ mb: 6, position: 'relative', zIndex: 20 }}>
+        <MovieSearch />
+      </Box>
 
-      <Divider sx={{ my: 3 }} />
+      <Box sx={{ mb: 6, position: 'relative', zIndex: 10 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "600",
+            mb: 3,
+            color: "text.primary"
+          }}>
+          Popular Films
+        </Typography>
+        <PopularMovies />
+      </Box>
 
-      <Typography variant="h5" gutterBottom>
-        Search Films
-      </Typography>
-      <MovieSearch />
-
-      <Divider sx={{ my: 3 }} />
-
-      <Typography variant="h5" gutterBottom>
-        My List
-      </Typography>
-      <MyMovies />
+      <Box sx={{ position: 'relative', zIndex: 10 }}>
+        <Typography
+          variant="h5"
+          sx={{
+            fontWeight: "600",
+            mb: 3,
+            color: "text.primary"
+          }}>
+          My List
+        </Typography>
+        <MyMovies />
+      </Box>
     </Container>
-  )
+  );
 }
 
 export default App

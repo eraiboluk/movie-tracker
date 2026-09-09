@@ -1,98 +1,143 @@
-import {
-  Box,
-  Typography,
-  Card,
-  CardMedia,
-  CardContent,
-  Skeleton,
-} from '@mui/material'
+import { useRef, useState, useCallback } from 'react'
+import { Box, Card, CardMedia, Skeleton, Typography, IconButton } from '@mui/material'
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { getPosterUrl } from '../api/movies'
 import { POPULAR_MOVIES_POSTER_SIZE } from '../constants'
 import { usePopularMovies } from '../hooks/usePopularMovies'
+import type { TmdbMovie } from '../api/movies'
 
-export function PopularMovies() {
+interface PopularMoviesProps {
+  onMovieClick?: (movie: TmdbMovie) => void
+}
+
+export function PopularMovies({onMovieClick }: PopularMoviesProps) {
   const { data: movies, isLoading } = usePopularMovies()
 
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const [canScrollLeft, setCanScrollLeft] = useState(false)
+  const [canScrollRight, setCanScrollRight] = useState(true)
+
+  const updateScrollButtons = useCallback(() => {
+    const el = scrollRef.current
+    if (!el) return
+    setCanScrollLeft(el.scrollLeft > 0)
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 1)
+
+  }, [])
+
+  const initScrollCheck = useCallback((node: HTMLDivElement | null) => {
+    if (node) {
+      scrollRef.current = node
+      setCanScrollRight(node.scrollWidth > node.clientWidth)
+    }
+  }, [])
+
+  const scroll = (direction: 'left' | 'right') => {
+    const el = scrollRef.current
+    if (!el) return
+    const amount = direction === 'left' ? -el.clientWidth : el.clientWidth
+    el.scrollBy({ left: amount, behavior: 'smooth' })
+  }
+
+  if (isLoading) {
+    return (
+      <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden' }}>
+        {Array.from({ length: 10 }).map((_, i) => (
+          <Skeleton key={i} variant="rounded" width={150} height={225} sx={{ flexShrink: 0 }} />
+        ))}
+      </Box>
+    )
+  }
+
+  if (!movies || movies.length === 0) return null
+
   return (
-    <Box>
-      <Typography variant="h6" gutterBottom>
-        Popular Films
-      </Typography>
+    <Box sx={{ position: 'relative' }}>
+      {canScrollLeft && (
+        <IconButton
+          onClick={() => scroll('left')}
+          sx={{
+            position: 'absolute',
+            left: -20,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 2,
+            bgcolor: 'background.paper',
+            boxShadow: 3,
+            '&:hover': { bgcolor: 'background.default' },
+          }}
+        >
+          <ChevronLeftIcon />
+        </IconButton>
+      )}
 
       <Box
+        ref={initScrollCheck}
+        onScroll={updateScrollButtons}
         sx={{
           display: 'flex',
-          overflowX: 'auto',
           gap: 2,
-          pb: 2,
-          '&::-webkit-scrollbar': { height: 8 },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: 'grey.400',
-            borderRadius: 4,
-          },
+          overflowX: 'auto',
+          py: 1,
+          scrollSnapType: 'x mandatory',
+          scrollbarWidth: 'none',
+          '&::-webkit-scrollbar': { display: 'none' },
         }}
       >
-        {isLoading
-          ? Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton
-                key={i}
-                variant="rounded"
-                width={150}
-                height={225}
-                sx={{ flexShrink: 0 }}
-              />
-            ))
-          : movies?.map((movie) => {
-              const posterUrl = getPosterUrl(movie.posterPath, POPULAR_MOVIES_POSTER_SIZE)
-              return (
-                <Card
-                  key={movie.tmdbId}
-                  sx={{
-                    minWidth: 150,
-                    maxWidth: 150,
-                    flexShrink: 0,
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s',
-                    '&:hover': { transform: 'scale(1.05)' },
-                  }}
-                >
-                  {posterUrl ? (
-                    <CardMedia
-                      component="img"
-                      height={225}
-                      image={posterUrl}
-                      alt={movie.title}
-                      sx={{ objectFit: 'cover' }}
-                    />
-                  ) : (
-                    <Box
-                      sx={{
-                        height: 225,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: 'grey.200',
-                      }}
-                    >
-                      <Typography variant="caption" color="text.secondary">
-                        ...
-                      </Typography>
-                    </Box>
-                  )}
-                  <CardContent sx={{ p: 1, '&:last-child': { pb: 1 } }}>
-                    <Typography variant="caption" noWrap title={movie.title}>
-                      {movie.title}
-                    </Typography>
-                    {movie.releaseDate && (
-                      <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                        {movie.releaseDate.split('-')[0]}
-                      </Typography>
-                    )}
-                  </CardContent>
-                </Card>
-              )
-            })}
+        {movies.map((movie) => {
+          const posterUrl = getPosterUrl(movie.posterPath, POPULAR_MOVIES_POSTER_SIZE)
+          return (
+            <Card
+              key={movie.tmdbId}
+              onClick={onMovieClick ? () => onMovieClick(movie) : undefined}
+              sx={{
+                width: 150,
+                height: 225,
+                flexShrink: 0,
+                borderRadius: 2,
+                scrollSnapAlign: 'start',
+                cursor: onMovieClick ? 'pointer' : 'default',
+                transition: (theme) => theme.transitions.create('transform', {
+                  duration: theme.transitions.duration.standard,
+                }),
+                '&:hover': { transform: 'scale(1.05)' },
+              }}
+            >
+              {posterUrl ? (
+                <CardMedia component="img" height="100%" image={posterUrl} alt={movie.title} sx={{ objectFit: 'cover' }} />
+              ) : (
+                <Box sx={{ height: '100%', bgcolor: 'grey.800', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      textAlign: "center",
+                      p: 1
+                    }}>{movie.title}</Typography>
+                </Box>
+              )}
+            </Card>
+          );
+        })}
       </Box>
+
+      {canScrollRight && (
+        <IconButton
+          onClick={() => scroll('right')}
+          sx={{
+            position: 'absolute',
+            right: -20,
+            top: '50%',
+            transform: 'translateY(-50%)',
+            zIndex: 2,
+            bgcolor: 'background.paper',
+            boxShadow: 3,
+            '&:hover': { bgcolor: 'background.default' },
+          }}
+        >
+          <ChevronRightIcon />
+        </IconButton>
+      )}
     </Box>
-  )
+  );
 }

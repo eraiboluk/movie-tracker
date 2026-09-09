@@ -1,0 +1,58 @@
+import {
+  ListItemButton,
+  ListItemAvatar,
+  ListItemText,
+  Avatar,
+  IconButton,
+  CircularProgress
+} from '@mui/material'
+import AddIcon from '@mui/icons-material/Add'
+import { getPosterUrl } from '../api/movies'
+import type { TmdbMovie } from '../api/movies'
+import { SEARCH_RESULT_POSTER_SIZE } from '../constants'
+
+interface MovieSearchResultItemProps {
+  movie: TmdbMovie
+  isAdding: boolean
+  onAdd: (movie: TmdbMovie) => void
+  liProps?: React.HTMLAttributes<HTMLLIElement>
+}
+
+export function MovieSearchResultItem({ movie, isAdding, onAdd, liProps }: MovieSearchResultItemProps) {
+  const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
+
+  return (
+    <ListItemButton
+      component="li"
+      {...liProps}
+      divider
+      disabled={isAdding}
+    >
+      <ListItemAvatar>
+        <Avatar
+          variant="rounded"
+          src={posterUrl ?? undefined}
+          alt={movie.title}
+          sx={{ width: 50, height: 75, borderRadius: 1 }}
+        />
+      </ListItemAvatar>
+      <ListItemText
+        primary={movie.title}
+        secondary={movie.releaseDate?.split('-')[0]}
+        slotProps={{ primary: { noWrap: true, sx: { fontWeight: 500 } } }}
+      />
+      <IconButton
+        aria-label={`Add ${movie.title}`}
+        onClick={(e) => { e.stopPropagation(); onAdd(movie) }}
+        disabled={isAdding}
+        sx={{
+          bgcolor: 'primary.dark',
+          color: 'common.white',
+          '&:hover': { bgcolor: 'primary.main' },
+        }}
+      >
+        {isAdding ? <CircularProgress size={20} color="inherit" /> : <AddIcon />}
+      </IconButton>
+    </ListItemButton>
+  );
+}
