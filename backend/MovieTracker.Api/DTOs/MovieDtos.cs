@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace MovieTracker.Api.DTOs;
 
@@ -39,7 +39,12 @@ public class MovieDto
 
 public class TmdbSearchResultDto
 {
+    [System.Text.Json.Serialization.JsonPropertyName("results")]
     public List<TmdbMovieDto> Results { get; set; } = [];
+
+    [System.Text.Json.Serialization.JsonPropertyName("page")]
     public int Page { get; set; }
+
+    [System.Text.Json.Serialization.JsonPropertyName("totalPages")]
     public int TotalPages { get; set; }
 }

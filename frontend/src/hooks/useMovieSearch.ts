@@ -71,7 +71,12 @@ export function useMovieSearch() {
       return localMatches
     }
     const localIds = new Set(localMatches.map((m) => m.tmdbId))
-    const uniqueApiResults = searchResults.filter((m) => !localIds.has(m.tmdbId))
+    const uniqueApiResults = searchResults.filter((m) => {
+        if (localIds.has(m.tmdbId)) return false
+        localIds.add(m.tmdbId)
+        return true
+    })
+    
     return [...localMatches, ...uniqueApiResults]
   }, [trimmedInput, popularMovies, searchResults])
 

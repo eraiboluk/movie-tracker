@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using MovieTracker.Api.Data;
@@ -44,7 +44,7 @@ public class MoviesController : ControllerBase
             return BadRequest();
 
         if (query.Length > _tmdbSettings.MaxSearchQueryLength)
-            return BadRequest("Arama sorgusu çok uzun.");
+            return BadRequest("Search query is too long.");
 
         if (page < 1) page = 1;
 
@@ -59,25 +59,29 @@ public class MoviesController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<MovieDto>> AddMovie(AddMovieRequestDto request)
+    public async Task<ActionResult<MovieDto>> AddMovie(AddMovieRequestDto request, CancellationToken ct)
     {
         try
         {
             var userId = _currentUser.GetCurrentUserId();
-            var movie = await _movieService.AddMovieAsync(userId, request);
+            var movie = await _movieService.AddMovieAsync(userId, request, ct);
             return CreatedAtAction(nameof(GetMyMovies), new { id = movie.Id }, movie);
         }
         catch (InvalidOperationException ex)
         {
             return Conflict(ex.Message);
         }
+        catch (Microsoft.EntityFrameworkCore.DbUpdateException)
+        {
+            return Conflict("This movie is already in your list.");
+        }
     }
 
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteMovie(int id)
+    public async Task<IActionResult> DeleteMovie(int id, CancellationToken ct)
     {
         var userId = _currentUser.GetCurrentUserId();
-        var deleted = await _movieService.DeleteMovieAsync(userId, id);
+        var deleted = await _movieService.DeleteMovieAsync(userId, id, ct);
         return deleted ? NoContent() : NotFound();
     }
 
@@ -96,7 +100,8 @@ public class MoviesController : ControllerBase
         if (fresh.Count > 0)
         {
             var json = JsonSerializer.Serialize(fresh);
-            await _cache.SetAsync(_cacheSettings.PopularMoviesCacheKey, json);
+            await _cache.SetAsync(_cacheSettings.PopularMoviesCacheKey, json,
+                TimeSpan.FromHours(25));
         }
 
         return Ok(fresh);

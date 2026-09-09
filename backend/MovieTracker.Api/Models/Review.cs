@@ -1,4 +1,4 @@
-﻿namespace MovieTracker.Api.Models;
+namespace MovieTracker.Api.Models;
 
 public class Review
 {
@@ -9,5 +9,5 @@ public class Review
     public int Rating { get; set; }
     public string? Comment { get; set; }
     public DateTime WatchedOn { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; }
 }

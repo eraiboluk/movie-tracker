@@ -1,4 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MovieTracker.Api.Data;
 using MovieTracker.Api.DTOs;
 using MovieTracker.Api.Models;
@@ -33,9 +33,9 @@ public class MovieService : IMovieService
             .ToListAsync(ct);
     }
 
-    public async Task<MovieDto> AddMovieAsync(Guid userId, AddMovieRequestDto request)
+    public async Task<MovieDto> AddMovieAsync(Guid userId, AddMovieRequestDto request, CancellationToken ct = default)
     {
-        var exists = await _db.Movies.AnyAsync(m => m.UserId == userId && m.TmdbId == request.TmdbId);
+        var exists = await _db.Movies.AnyAsync(m => m.UserId == userId && m.TmdbId == request.TmdbId, ct);
         if (exists)
             throw new InvalidOperationException("Film already exists in the list.");
 
@@ -52,7 +52,7 @@ public class MovieService : IMovieService
         };
 
         _db.Movies.Add(movie);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
 
         return new MovieDto
         {
@@ -66,13 +66,13 @@ public class MovieService : IMovieService
         };
     }
 
-    public async Task<bool> DeleteMovieAsync(Guid userId, int id)
+    public async Task<bool> DeleteMovieAsync(Guid userId, int id, CancellationToken ct = default)
     {
-        var movie = await _db.Movies.FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId);
+        var movie = await _db.Movies.FirstOrDefaultAsync(m => m.Id == id && m.UserId == userId, ct);
         if (movie is null) return false;
 
         _db.Movies.Remove(movie);
-        await _db.SaveChangesAsync();
+        await _db.SaveChangesAsync(ct);
         return true;
     }
 }
