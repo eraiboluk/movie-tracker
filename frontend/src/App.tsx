@@ -10,7 +10,6 @@ function App() {
         variant="h3"
         gutterBottom
         sx={{
-          fontWeight: "bold",
           textAlign: "center",
           color: "primary.main"
         }}>
@@ -25,7 +24,6 @@ function App() {
         <Typography
           variant="h5"
           sx={{
-            fontWeight: "600",
             mb: 3,
             color: "text.primary"
           }}>
@@ -38,7 +36,6 @@ function App() {
         <Typography
           variant="h5"
           sx={{
-            fontWeight: "600",
             mb: 3,
             color: "text.primary"
           }}>

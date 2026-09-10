@@ -1,10 +1,12 @@
 import { Autocomplete, TextField, InputAdornment, Alert, Snackbar } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import { useMovieSearch } from '../hooks/useMovieSearch'
 import { MovieSearchResultItem } from './MovieSearchResultItem'
 import { UI } from '../constants'
 
 export function MovieSearch() {
+  const theme = useTheme()
   const {
     input,
     setInput,
@@ -76,7 +78,7 @@ export function MovieSearch() {
                   </InputAdornment>
                 ),
                 sx: {
-                  borderRadius: 8,
+                  borderRadius: theme.custom.search.inputBorderRadius,
                   bgcolor: 'background.paper',
                   '& fieldset': { border: 'none' },
                   boxShadow: 1,
@@ -85,10 +87,10 @@ export function MovieSearch() {
             }}
           />
         )}
-        sx={{ maxWidth: 600, mx: 'auto' }}
+        sx={{ maxWidth: theme.custom.search.maxWidth, mx: 'auto' }}
       />
       {isSearchError && (
-        <Alert severity="error" sx={{ mt: 1, maxWidth: 600, mx: 'auto' }}>
+        <Alert severity="error" sx={{ mt: 1, maxWidth: theme.custom.search.maxWidth, mx: 'auto' }}>
           An error occurred while searching. Please try again.
         </Alert>
       )}

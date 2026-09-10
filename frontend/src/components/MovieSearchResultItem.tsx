@@ -6,6 +6,7 @@ import {
   IconButton,
   CircularProgress
 } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import AddIcon from '@mui/icons-material/Add'
 import { getPosterUrl } from '../api/movies'
 import type { TmdbMovie } from '../api/movies'
@@ -19,6 +20,7 @@ interface MovieSearchResultItemProps {
 }
 
 export function MovieSearchResultItem({ movie, isAdding, onAdd, liProps }: MovieSearchResultItemProps) {
+  const theme = useTheme()
   const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
 
   return (
@@ -33,7 +35,11 @@ export function MovieSearchResultItem({ movie, isAdding, onAdd, liProps }: Movie
           variant="rounded"
           src={posterUrl ?? undefined}
           alt={movie.title}
-          sx={{ width: 50, height: 75, borderRadius: 1 }}
+          sx={{
+            width: theme.custom.searchResult.avatar.width,
+            height: theme.custom.searchResult.avatar.height,
+            borderRadius: theme.custom.searchResult.avatar.borderRadius,
+          }}
         />
       </ListItemAvatar>
       <ListItemText
