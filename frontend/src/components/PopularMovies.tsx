@@ -1,5 +1,6 @@
 import { useRef, useState, useCallback } from 'react'
 import { Box, Card, CardMedia, Skeleton, Typography, IconButton } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
 import ChevronRightIcon from '@mui/icons-material/ChevronRight'
 import { getPosterUrl } from '../api/movies'
@@ -12,6 +13,7 @@ interface PopularMoviesProps {
 }
 
 export function PopularMovies({onMovieClick }: PopularMoviesProps) {
+  const theme = useTheme()
   const { data: movies, isLoading } = usePopularMovies()
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -40,11 +42,13 @@ export function PopularMovies({onMovieClick }: PopularMoviesProps) {
     el.scrollBy({ left: amount, behavior: 'smooth' })
   }
 
+  const { width: cardWidth, height: cardHeight } = theme.custom.card.popularMovie
+
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', gap: 2, overflow: 'hidden' }}>
         {Array.from({ length: UI.POPULAR_MOVIES_SKELETON_COUNT }).map((_, i) => (
-          <Skeleton key={i} variant="rounded" width={150} height={225} sx={{ flexShrink: 0 }} />
+          <Skeleton key={i} variant="rounded" width={cardWidth} height={cardHeight} sx={{ flexShrink: 0 }} />
         ))}
       </Box>
     )
@@ -92,13 +96,13 @@ export function PopularMovies({onMovieClick }: PopularMoviesProps) {
               key={movie.tmdbId}
               onClick={onMovieClick ? () => onMovieClick(movie) : undefined}
               sx={{
-                width: 150,
-                height: 225,
+                width: cardWidth,
+                height: cardHeight,
                 flexShrink: 0,
-                borderRadius: 2,
+                borderRadius: theme.custom.card.borderRadius,
                 scrollSnapAlign: 'start',
                 cursor: onMovieClick ? 'pointer' : 'default',
-                transition: (theme) => theme.transitions.create('transform', {
+                transition: theme.transitions.create('transform', {
                   duration: theme.transitions.duration.standard,
                 }),
                 '&:hover': { transform: 'scale(1.05)' },

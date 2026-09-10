@@ -1,4 +1,5 @@
 import { Card, CardMedia, Box, Typography, IconButton, CircularProgress } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import DeleteIcon from '@mui/icons-material/Delete'
 import { getPosterUrl } from '../api/movies'
 import type { Movie } from '../api/movies'
@@ -11,13 +12,14 @@ interface MovieCardProps {
 }
 
 export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
+  const theme = useTheme()
   const posterUrl = getPosterUrl(movie.posterPath, DEFAULT_POSTER_SIZE)
 
   return (
     <Card
       sx={{
         position: 'relative',
-        borderRadius: 2,
+        borderRadius: theme.custom.card.borderRadius,
         overflow: 'hidden',
         aspectRatio: '2/3',
         '&:hover .delete-btn': { opacity: 1 },
@@ -44,7 +46,7 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
           bgcolor: 'error.dark',
           color: 'common.white',
           opacity: 0,
-          transition: (theme) => theme.transitions.create('opacity', {
+          transition: theme.transitions.create('opacity', {
             duration: theme.transitions.duration.short,
           }),
           '&:hover': { bgcolor: 'error.main' },
@@ -54,7 +56,7 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
         {isDeleting ? <CircularProgress size={16} color="inherit" /> : <DeleteIcon fontSize="small" />}
       </IconButton>
 
-      <Box sx={{ position: 'absolute', bottom: 0, width: '100%', bgcolor: 'rgba(0,0,0,0.8)', color: 'common.white', p: 1.5, textAlign: 'center' }}>
+      <Box sx={{ position: 'absolute', bottom: 0, width: '100%', bgcolor: theme.custom.card.titleOverlayBg, color: 'common.white', p: 1.5, textAlign: 'center' }}>
         <Typography variant="caption" noWrap sx={{ display: 'block', fontWeight: 'bold' }}>
           {movie.title}
         </Typography>

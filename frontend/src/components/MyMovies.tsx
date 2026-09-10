@@ -1,18 +1,19 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Box, Typography, Skeleton } from '@mui/material'
+import { useTheme } from '@mui/material/styles'
 import { getMyMovies, deleteMovie } from '../api/movies'
 import { QUERY_KEYS, UI } from '../constants'
 import { MovieCard } from './MovieCard'
-import type { SxProps, Theme } from '@mui/material'
-
-const movieGridSx: SxProps<Theme> = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-  gap: 3,
-}
 
 export function MyMovies() {
+  const theme = useTheme()
   const queryClient = useQueryClient()
+
+  const movieGridSx = {
+    display: 'grid',
+    gridTemplateColumns: `repeat(auto-fill, minmax(${theme.custom.card.myMovieGridMinWidth}, 1fr))`,
+    gap: 3,
+  }
 
   const { data: movies, isLoading } = useQuery({
     queryKey: [QUERY_KEYS.MY_MOVIES],
