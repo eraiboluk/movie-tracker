@@ -1,3 +1,5 @@
+import '@fontsource/merriweather/400.css'
+import '@fontsource/merriweather/700.css'
 import { createTheme } from '@mui/material/styles'
 import './theme.types'
 
@@ -31,7 +33,7 @@ export const antiqueParchment = createTheme({
     divider: 'rgba(212, 197, 169, 0.12)',
   },
   typography: {
-    fontFamily: '"Merriweather", "Georgia", "Cambria", "Times New Roman", serif',
+    fontFamily: '"Merriweather", serif',
     h3: { fontWeight: 700 },
     h5: { fontWeight: 600 },
     caption: { fontWeight: 400 },

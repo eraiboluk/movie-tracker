@@ -1,3 +1,7 @@
+import '@fontsource/inter/400.css'
+import '@fontsource/inter/500.css'
+import '@fontsource/inter/600.css'
+import '@fontsource/inter/700.css'
 import { createTheme } from '@mui/material/styles'
 import './theme.types'
 
@@ -31,7 +35,7 @@ export const goldenCinema = createTheme({
     divider: 'rgba(252, 252, 252, 0.15)',
   },
   typography: {
-    fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+    fontFamily: '"Inter", sans-serif',
     h3: { fontWeight: 700 },
     h5: { fontWeight: 600 },
     caption: { fontWeight: 500 },
