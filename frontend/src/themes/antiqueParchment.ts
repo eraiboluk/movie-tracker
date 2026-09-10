@@ -35,7 +35,7 @@ export const antiqueParchment = createTheme({
   typography: {
     fontFamily: '"Merriweather", serif',
     h3: { fontWeight: 700 },
-    h5: { fontWeight: 600 },
+    h5: { fontWeight: 700 },
     caption: { fontWeight: 400 },
   },
   shape: {
