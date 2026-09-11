@@ -48,3 +48,17 @@ public class TmdbSearchResultDto
     [System.Text.Json.Serialization.JsonPropertyName("totalPages")]
     public int TotalPages { get; set; }
 }
+
+public class TmdbMovieDetailsDto
+{
+    public int TmdbId { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string? Overview { get; set; }
+    public string? PosterPath { get; set; }
+    public string? BackdropPath { get; set; }
+    public string? ReleaseDate { get; set; }
+    public int? Runtime { get; set; }
+    public double? VoteAverage { get; set; }
+    public string? Tagline { get; set; }
+    public List<string> Genres { get; set; } = [];
+}

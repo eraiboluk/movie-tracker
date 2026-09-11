@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Options;
 using MovieTracker.Api.DTOs;
 using MovieTracker.Api.Options;
 using System.Text.Json;
@@ -104,6 +104,47 @@ public class TmdbService : ITmdbService
         }
     }
 
+    public async Task<TmdbMovieDetailsDto?> GetMovieDetailsAsync(int tmdbId, CancellationToken ct = default)
+    {
+        var cacheKey = $"{_cacheSettings.SearchCacheKeyPrefix}details:{tmdbId}";
+        var cached = await _cache.GetAsync(cacheKey);
+        if (cached is not null)
+        {
+            return JsonSerializer.Deserialize<TmdbMovieDetailsDto>(cached);
+        }
+
+        try
+        {
+            var response = await _httpClient.GetFromJsonAsync<TmdbMovieDetailsResponse>(
+                $"movie/{tmdbId}?api_key={_apiKey}&language={_tmdbSettings.Language}", ct);
+
+            if (response is null) return null;
+
+            var result = new TmdbMovieDetailsDto
+            {
+                TmdbId = response.Id,
+                Title = response.Title,
+                Overview = response.Overview,
+                PosterPath = response.PosterPath,
+                BackdropPath = response.BackdropPath,
+                ReleaseDate = response.ReleaseDate,
+                Runtime = response.Runtime,
+                VoteAverage = response.VoteAverage,
+                Tagline = response.Tagline,
+                Genres = response.Genres?.Select(g => g.Name).ToList() ?? []
+            };
+
+            var json = JsonSerializer.Serialize(result);
+            await _cache.SetAsync(cacheKey, json, TimeSpan.FromHours(_cacheSettings.SearchCacheTtlHours));
+
+            return result;
+        }
+        catch (HttpRequestException)
+        {
+            return null;
+        }
+    }
+
     private class TmdbSearchResponse
     {
         public List<TmdbResult> Results { get; set; } = new();
@@ -121,6 +162,31 @@ public class TmdbService : ITmdbService
         [JsonPropertyName("release_date")]
         public string? ReleaseDate { get; set; }
     }
+
+    private class TmdbMovieDetailsResponse
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string? Overview { get; set; }
+        [JsonPropertyName("poster_path")]
+        public string? PosterPath { get; set; }
+        [JsonPropertyName("backdrop_path")]
+        public string? BackdropPath { get; set; }
+        [JsonPropertyName("release_date")]
+        public string? ReleaseDate { get; set; }
+        public int? Runtime { get; set; }
+        [JsonPropertyName("vote_average")]
+        public double? VoteAverage { get; set; }
+        public string? Tagline { get; set; }
+        public List<TmdbGenre>? Genres { get; set; }
+    }
+
+    private class TmdbGenre
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+    }
+
     private static string NormalizeQuery(string query)
         => query.Trim().ToLowerInvariant();
 }
