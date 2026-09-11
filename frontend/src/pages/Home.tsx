@@ -1,10 +1,12 @@
-import { Box, Container, Typography } from '@mui/material'
+import { Box, Container, Typography, Fade } from '@mui/material'
 import { MovieSearch } from '../components/MovieSearch'
 import { PopularMovies } from '../components/PopularMovies'
 import { MyMovies } from '../components/MyMovies'
+import { UI } from '../constants'
 
 export function Home() {
   return (
+    <Fade in={true} timeout={UI.PAGE_TRANSITION_DURATION_MS}>
     <Container maxWidth="lg" sx={{ py: 6, minHeight: '100vh' }}>
       <Typography
         variant="h3"
@@ -44,5 +46,6 @@ export function Home() {
         <MyMovies />
       </Box>
     </Container>
+    </Fade>
   )
 }

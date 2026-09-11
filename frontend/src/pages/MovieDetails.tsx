@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom'
-import { Box, Container, Typography, IconButton, Skeleton, Chip, Stack } from '@mui/material'
+import { Box, Container, Typography, IconButton, Skeleton, Chip, Stack, Fade } from '@mui/material'
 import ArrowBackIcon from '@mui/icons-material/ArrowBack'
 import { useTheme } from '@mui/material/styles'
 import { useMovieDetails } from '../hooks/useMovieDetails'
 import { getPosterUrl } from '../api/movies'
+import { UI } from '../constants'
 
 export function MovieDetails() {
   const { id } = useParams<{ id: string }>()
@@ -32,28 +33,34 @@ export function MovieDetails() {
   const posterUrl = getPosterUrl(movie.posterPath, 'LARGE')
 
   return (
-    <Container maxWidth="lg" sx={{ py: 6 }}>
-      <IconButton onClick={() => navigate(-1)} sx={{ mb: 4, color: 'text.primary' }}>
-        <ArrowBackIcon />
-      </IconButton>
-      
-      <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
-        {posterUrl ? (
-          <Box
-            component="img"
-            src={posterUrl}
-            alt={movie.title}
-            sx={{
-              width: { xs: '100%', md: 300 },
-              borderRadius: theme.custom?.card?.borderRadius ?? 2,
-              boxShadow: 3,
-            }}
-          />
-        ) : (
-          <Box sx={{ width: { xs: '100%', md: 300 }, height: 450, bgcolor: 'grey.800', borderRadius: theme.custom?.card?.borderRadius ?? 2 }} />
-        )}
+    <Fade in={true} timeout={UI.PAGE_TRANSITION_DURATION_MS}>
+      <Container maxWidth="lg" sx={{ py: 6 }}>
+        <IconButton onClick={() => navigate(-1)} sx={{ mb: 4, color: 'text.primary' }}>
+          <ArrowBackIcon />
+        </IconButton>
+        
+        <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 4 }}>
+          {posterUrl ? (
+            <Box
+              component="img"
+              src={posterUrl}
+              alt={movie.title}
+              sx={{
+                width: { xs: '100%', md: UI.MOVIE_DETAILS.POSTER_WIDTH },
+                borderRadius: theme.custom?.card?.borderRadius ?? 2,
+                boxShadow: 3,
+              }}
+            />
+          ) : (
+            <Box sx={{ 
+              width: { xs: '100%', md: UI.MOVIE_DETAILS.POSTER_WIDTH }, 
+              height: UI.MOVIE_DETAILS.POSTER_HEIGHT, 
+              bgcolor: 'grey.800', 
+              borderRadius: theme.custom?.card?.borderRadius ?? 2 
+            }} />
+          )}
 
-        <Box sx={{ flex: 1 }}>
+          <Box sx={{ flex: 1 }}>
           <Typography variant="h3" gutterBottom sx={{ color: 'primary.main', fontWeight: 'bold' }}>
             {movie.title}
           </Typography>
@@ -91,5 +98,6 @@ export function MovieDetails() {
         </Box>
       </Box>
     </Container>
+    </Fade>
   )
 }
