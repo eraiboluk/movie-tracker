@@ -1,4 +1,5 @@
 import { useRef, useState, useCallback } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Box, Card, CardMedia, Skeleton, Typography, IconButton } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft'
@@ -14,6 +15,7 @@ interface PopularMoviesProps {
 
 export function PopularMovies({onMovieClick }: PopularMoviesProps) {
   const theme = useTheme()
+  const navigate = useNavigate()
   const { data: movies, isLoading } = usePopularMovies()
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -94,14 +96,17 @@ export function PopularMovies({onMovieClick }: PopularMoviesProps) {
           return (
             <Card
               key={movie.tmdbId}
-              onClick={onMovieClick ? () => onMovieClick(movie) : undefined}
+              onClick={() => {
+                if (onMovieClick) onMovieClick(movie)
+                else navigate(`/movie/${movie.tmdbId}`)
+              }}
               sx={{
                 width: cardWidth,
                 height: cardHeight,
                 flexShrink: 0,
                 borderRadius: theme.custom.card.borderRadius,
                 scrollSnapAlign: 'start',
-                cursor: onMovieClick ? 'pointer' : 'default',
+                cursor: 'pointer',
                 transition: theme.transitions.create('transform', {
                   duration: theme.transitions.duration.standard,
                 }),

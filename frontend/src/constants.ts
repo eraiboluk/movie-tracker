@@ -20,11 +20,13 @@ export const QUERY_KEYS = {
   POPULAR_MOVIES: 'popular-movies',
   SEARCH_MOVIES: 'tmdb-search',
   MY_MOVIES: 'my-movies',
+  MOVIE_DETAILS: 'movie-details',
 } as const
 
 export const STALE_TIMES = {
   POPULAR_MOVIES: 1000 * 60 * 30,
   SEARCH: 1000 * 60 * 5,
+  MOVIE_DETAILS: 1000 * 60 * 60 * 24,
 } as const
 
 export const UI = {

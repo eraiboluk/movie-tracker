@@ -20,6 +20,14 @@ export interface TmdbSearchResult {
   totalPages: number
 }
 
+export interface TmdbMovieDetails extends TmdbMovie {
+  backdropPath?: string
+  runtime?: number
+  voteAverage?: number
+  tagline?: string
+  genres: string[]
+}
+
 export const getPosterUrl = (
   posterPath: string | null | undefined,
   size: keyof typeof TMDB_POSTER_SIZES = DEFAULT_POSTER_SIZE
@@ -52,4 +60,9 @@ export const addMovie = async (movie: TmdbMovie): Promise<Movie> => {
 
 export const deleteMovie = async (id: number): Promise<void> => {
   await apiClient.delete(`/movies/${id}`)
+}
+
+export const getMovieDetails = async (tmdbId: number): Promise<TmdbMovieDetails> => {
+  const { data } = await apiClient.get<TmdbMovieDetails>(`/movies/tmdb/${tmdbId}`)
+  return data
 }
