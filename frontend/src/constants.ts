@@ -1,6 +1,8 @@
 export const MIN_SEARCH_CHAR_LENGTH = 3
 
 export const DEBOUNCE_DELAY_MS = 300
+export const AUTH_TOKEN_KEY = 'token'
+export const AUTH_PASSWORD_MIN_LENGTH = 8
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5185/api'
 

@@ -5,13 +5,16 @@ import { MyMovies } from '../components/MyMovies'
 import { UI } from '../constants'
 
 import { useNavigate } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { setAuthToken } from '../api/auth'
 
 export function Home() {
   const navigate = useNavigate()
+  const queryClient = useQueryClient()
 
   const handleLogout = () => {
     setAuthToken(null)
+    queryClient.clear()
     navigate('/login')
   }
 

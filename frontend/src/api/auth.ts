@@ -1,4 +1,5 @@
 import { apiClient } from './axiosClient'
+import { AUTH_TOKEN_KEY } from '../constants'
 
 export interface AuthResponse {
   tokenType: string
@@ -25,15 +26,15 @@ export const registerUser = async (email: string, password: string): Promise<voi
 export const setAuthToken = (token: string | null) => {
   if (token) {
     apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`
-    localStorage.setItem('token', token)
+    localStorage.setItem(AUTH_TOKEN_KEY, token)
   } else {
     delete apiClient.defaults.headers.common['Authorization']
-    localStorage.removeItem('token')
+    localStorage.removeItem(AUTH_TOKEN_KEY)
   }
 }
 
 // Initialize token from local storage on load
-const savedToken = localStorage.getItem('token')
+const savedToken = localStorage.getItem(AUTH_TOKEN_KEY)
 if (savedToken) {
   setAuthToken(savedToken)
 }

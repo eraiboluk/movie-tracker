@@ -3,9 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { Home } from './pages/Home'
 import { MovieDetails } from './pages/MovieDetails'
 import { Auth } from './pages/Auth'
+import { AUTH_TOKEN_KEY } from './constants'
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const isAuthenticated = !!localStorage.getItem('token')
+  const isAuthenticated = !!localStorage.getItem(AUTH_TOKEN_KEY)
   return isAuthenticated ? children : <Navigate to="/login" />
 }
 

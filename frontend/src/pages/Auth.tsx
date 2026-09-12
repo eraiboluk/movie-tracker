@@ -4,7 +4,7 @@ import { Container, Box, Typography, TextField, Button, Fade, Alert, Link, Paper
 import CheckCircleIcon from '@mui/icons-material/CheckCircle'
 import CancelIcon from '@mui/icons-material/Cancel'
 import { login, registerUser, setAuthToken } from '../api/auth'
-import { UI } from '../constants'
+import { UI, AUTH_PASSWORD_MIN_LENGTH } from '../constants'
 import { useQueryClient } from '@tanstack/react-query'
 
 export function Auth() {
@@ -18,7 +18,7 @@ export function Auth() {
   const queryClient = useQueryClient()
 
   const passwordRequirements = [
-    { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+    { label: `At least ${AUTH_PASSWORD_MIN_LENGTH} characters`, test: (p: string) => p.length >= AUTH_PASSWORD_MIN_LENGTH },
     { label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
     { label: 'One number', test: (p: string) => /[0-9]/.test(p) },
     { label: 'One special character (!, @, #, etc.)', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
