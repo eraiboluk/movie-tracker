@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using MovieTracker.Api.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,12 @@ builder.Services.AddApplicationServices(builder.Configuration);
 builder.Services.AddSecurityAndCors(builder.Configuration);
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<MovieTracker.Api.Data.MovieTrackerDbContext>();
+    db.Database.Migrate();
+}
 
 if (app.Environment.IsDevelopment())
 {
