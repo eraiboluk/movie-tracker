@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using MovieTracker.Api.Data;
+using MovieTracker.Api.Models;
 using MovieTracker.Api.Options;
 using MovieTracker.Api.Services;
 using MovieTracker.Api.Workers;
@@ -45,6 +46,11 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddSecurityAndCors(this IServiceCollection services, IConfiguration config)
     {
+        services.AddAuthorization();
+        
+        services.AddIdentityApiEndpoints<ApplicationUser>()
+            .AddEntityFrameworkStores<MovieTrackerDbContext>();
+
         var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"];
 
         services.AddCors(options =>
