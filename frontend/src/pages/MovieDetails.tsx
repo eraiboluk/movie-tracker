@@ -152,7 +152,7 @@ export function MovieDetails() {
 
             {localMovie ? (
               <Box sx={{ p: 3, bgcolor: 'background.paper', borderRadius: 2, border: '1px solid', borderColor: 'divider' }}>
-                <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2, color: 'success.main' }}>
+                <Stack direction="row" spacing={1} sx={{ alignItems: 'center', mb: 2, color: 'success.main' }}>
                   <CheckCircleIcon />
                   <Typography variant="h6">In Your List</Typography>
                 </Stack>

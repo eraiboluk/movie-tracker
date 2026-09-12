@@ -65,7 +65,7 @@ export function ReviewModal({ movie, open, onClose, onSave, isSaving }: ReviewMo
             />
           </Box>
           <Box sx={{ width: { xs: '100%', sm: '67%' } }}>
-            <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
               Rating
             </Typography>
             <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
@@ -82,7 +82,7 @@ export function ReviewModal({ movie, open, onClose, onSave, isSaving }: ReviewMo
               ))}
             </Box>
 
-            <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
               Watched On
             </Typography>
             <TextField
@@ -94,7 +94,7 @@ export function ReviewModal({ movie, open, onClose, onSave, isSaving }: ReviewMo
               sx={{ mb: 3 }}
             />
 
-            <Typography variant="subtitle1" gutterBottom fontWeight="medium">
+            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'medium' }}>
               Review
             </Typography>
             <TextField
