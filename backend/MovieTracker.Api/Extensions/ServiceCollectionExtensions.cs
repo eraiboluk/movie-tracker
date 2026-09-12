@@ -61,13 +61,11 @@ public static class ServiceCollectionExtensions
         services.AddIdentityApiEndpoints<ApplicationUser>()
             .AddEntityFrameworkStores<MovieTrackerDbContext>();
 
-        var allowedOrigins = config.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? ["http://localhost:5173"];
-
         services.AddCors(options =>
         {
             options.AddPolicy("AllowReactApp", policy =>
             {
-                policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod();
+                policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
             });
         });
 
