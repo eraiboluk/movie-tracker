@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Autocomplete, TextField, InputAdornment, Alert, Snackbar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
@@ -10,6 +11,7 @@ import type { TmdbMovie } from '../api/movies'
 
 export function MovieSearch() {
   const theme = useTheme()
+  const navigate = useNavigate()
   const [selectedMovie, setSelectedMovie] = useState<TmdbMovie | null>(null)
 
   const {
@@ -59,6 +61,11 @@ export function MovieSearch() {
         inputValue={input}
         onInputChange={(_e, value, reason) => {
           if (reason !== 'reset') setInput(value)
+        }}
+        onChange={(_e, value) => {
+          if (value && typeof value !== 'string') {
+            navigate(`/movie/${value.tmdbId}`)
+          }
         }}
         filterOptions={(x) => x}
         loading={isFetching}

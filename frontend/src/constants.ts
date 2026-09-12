@@ -21,6 +21,7 @@ export const QUERY_KEYS = {
   SEARCH_MOVIES: 'tmdb-search',
   MY_MOVIES: 'my-movies',
   MOVIE_DETAILS: 'movie-details',
+  MOVIE_REVIEW: 'movie-review',
 } as const
 
 export const STALE_TIMES = {

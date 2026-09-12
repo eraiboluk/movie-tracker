@@ -72,3 +72,17 @@ export const getMovieDetails = async (tmdbId: number): Promise<TmdbMovieDetails>
   const { data } = await apiClient.get<TmdbMovieDetails>(`/movies/tmdb/${tmdbId}`)
   return data
 }
+
+export interface ReviewDto {
+  id: number
+  movieId: number
+  rating: number
+  comment?: string
+  watchedOn: string
+  createdAt: string
+}
+
+export const getMovieReview = async (localMovieId: number): Promise<ReviewDto> => {
+  const { data } = await apiClient.get<ReviewDto>(`/movies/${localMovieId}/review`)
+  return data
+}
