@@ -54,6 +54,7 @@ public static class ServiceCollectionExtensions
         services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
         {
             options.Password.RequireLowercase = false;
+            options.Password.RequireNonAlphanumeric = false;
             options.Password.RequiredLength = 8;
         });
 

@@ -21,7 +21,6 @@ export function Auth() {
     { label: `At least ${AUTH_PASSWORD_MIN_LENGTH} characters`, test: (p: string) => p.length >= AUTH_PASSWORD_MIN_LENGTH },
     { label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
     { label: 'One number', test: (p: string) => /[0-9]/.test(p) },
-    { label: 'One special character (!, @, #, etc.)', test: (p: string) => /[^A-Za-z0-9]/.test(p) },
   ]
 
   const isPasswordValid = passwordRequirements.every(req => req.test(password))
