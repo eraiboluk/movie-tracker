@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using MovieTracker.Api.Models;
 
 namespace MovieTracker.Api.Data;
 
-public class MovieTrackerDbContext : DbContext
+public class MovieTrackerDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>
 {
     public MovieTrackerDbContext(DbContextOptions<MovieTrackerDbContext> options) : base(options) { }
 
@@ -12,6 +14,8 @@ public class MovieTrackerDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<Movie>()
             .HasIndex(m => new { m.UserId, m.TmdbId })
             .IsUnique();
