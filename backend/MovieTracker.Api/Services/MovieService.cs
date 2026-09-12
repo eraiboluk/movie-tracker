@@ -39,6 +39,9 @@ public class MovieService : IMovieService
         if (exists)
             throw new InvalidOperationException("Film already exists in the list.");
 
+        if (request.Rating == 7)
+            throw new InvalidOperationException("Rating 7 is not allowed.");
+
         var movie = new Movie
         {
             UserId = userId,
@@ -50,6 +53,15 @@ public class MovieService : IMovieService
                 ? DateTime.SpecifyKind(parsed, DateTimeKind.Utc)
                 : null
         };
+
+        var review = new Review
+        {
+            Rating = request.Rating,
+            Comment = request.Comment,
+            WatchedOn = request.WatchedOn.ToUniversalTime(),
+            CreatedAt = DateTime.UtcNow
+        };
+        movie.Reviews.Add(review);
 
         _db.Movies.Add(movie);
         await _db.SaveChangesAsync(ct);

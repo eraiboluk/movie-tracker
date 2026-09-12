@@ -1,12 +1,17 @@
+import { useState } from 'react'
 import { Autocomplete, TextField, InputAdornment, Alert, Snackbar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import { useMovieSearch } from '../hooks/useMovieSearch'
 import { MovieSearchResultItem } from './MovieSearchResultItem'
+import { ReviewModal } from './ReviewModal'
 import { UI } from '../constants'
+import type { TmdbMovie } from '../api/movies'
 
 export function MovieSearch() {
   const theme = useTheme()
+  const [selectedMovie, setSelectedMovie] = useState<TmdbMovie | null>(null)
+
   const {
     input,
     setInput,
@@ -21,6 +26,27 @@ export function MovieSearch() {
     hasNextPage, 
     isFetchingNextPage,
   } = useMovieSearch()
+
+  const handleAddClick = (movie: TmdbMovie) => {
+    setSelectedMovie(movie)
+  }
+
+  const handleModalSave = (rating: number, watchedOn: string, comment?: string) => {
+    if (!selectedMovie) return
+    addMovie(
+      {
+        ...selectedMovie,
+        rating,
+        watchedOn,
+        comment,
+      },
+      {
+        onSettled: () => {
+          setSelectedMovie(null)
+        },
+      }
+    )
+  }
 
   return (
     <>
@@ -60,7 +86,7 @@ export function MovieSearch() {
               liProps={rest}
               movie={movie}
               isAdding={addingMovieId === movie.tmdbId}
-              onAdd={addMovie}
+              onAdd={handleAddClick}
             />
           )
         }}
@@ -104,6 +130,16 @@ export function MovieSearch() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {selectedMovie && (
+        <ReviewModal
+          movie={selectedMovie}
+          open={true}
+          onClose={() => setSelectedMovie(null)}
+          onSave={handleModalSave}
+          isSaving={addingMovieId === selectedMovie.tmdbId}
+        />
+      )}
     </>
   )
 }

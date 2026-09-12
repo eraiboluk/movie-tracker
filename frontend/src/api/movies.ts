@@ -45,7 +45,13 @@ export const getMyMovies = async (): Promise<Movie[]> => {
   return data
 }
 
-export const addMovie = async (movie: TmdbMovie): Promise<Movie> => {
+export interface AddMoviePayload extends TmdbMovie {
+  rating: number
+  watchedOn: string
+  comment?: string
+}
+
+export const addMovie = async (movie: AddMoviePayload): Promise<Movie> => {
   const { data } = await apiClient.post<Movie>('/movies', movie)
   return data
 }

@@ -24,6 +24,11 @@ public class AddMovieRequestDto
     public string? PosterPath { get; set; }
     [MaxLength(50)]
     public string? ReleaseDate { get; set; }
+    [Range(1, 10)]
+    public int Rating { get; set; }
+    public DateTime WatchedOn { get; set; }
+    [MaxLength(1000)]
+    public string? Comment { get; set; }
 }
 
 public class MovieDto
