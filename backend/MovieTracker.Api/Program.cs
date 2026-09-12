@@ -38,7 +38,7 @@ app.UseRateLimiter();
 app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.UseAuthorization();
-app.MapIdentityApi<MovieTracker.Api.Models.ApplicationUser>();
+app.MapGroup("/api").MapIdentityApi<MovieTracker.Api.Models.ApplicationUser>();
 app.MapControllers();
 
 app.Run();

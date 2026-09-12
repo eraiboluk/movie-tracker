@@ -1,22 +1,41 @@
-import { Box, Container, Typography, Fade } from '@mui/material'
+import { Box, Container, Typography, Fade, Button } from '@mui/material'
 import { MovieSearch } from '../components/MovieSearch'
 import { PopularMovies } from '../components/PopularMovies'
 import { MyMovies } from '../components/MyMovies'
 import { UI } from '../constants'
 
+import { useNavigate } from 'react-router-dom'
+import { setAuthToken } from '../api/auth'
+
 export function Home() {
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    setAuthToken(null)
+    navigate('/login')
+  }
+
   return (
     <Fade in={true} timeout={UI.PAGE_TRANSITION_DURATION_MS}>
     <Container maxWidth="lg" sx={{ py: 6, minHeight: '100vh' }}>
-      <Typography
-        variant="h3"
-        gutterBottom
-        sx={{
-          textAlign: "center",
-          color: "primary.main"
-        }}>
-        Movie Tracker
-      </Typography>
+      <Box sx={{ position: 'relative', mb: 4, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+        <Typography
+          variant="h3"
+          sx={{
+            color: "primary.main",
+            textAlign: "center"
+          }}>
+          Movie Tracker
+        </Typography>
+        <Button 
+          variant="outlined" 
+          color="inherit" 
+          onClick={handleLogout}
+          sx={{ position: 'absolute', right: 0 }}
+        >
+          Logout
+        </Button>
+      </Box>
 
       <Box sx={{ mb: 6, position: 'relative', zIndex: 20 }}>
         <MovieSearch />

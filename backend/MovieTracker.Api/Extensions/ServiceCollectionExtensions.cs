@@ -35,7 +35,10 @@ public static class ServiceCollectionExtensions
         });
 
         services.AddScoped<IMovieService, MovieService>();
-        services.AddScoped<ICurrentUserService, TemporaryCurrentUserService>();
+        
+        services.AddHttpContextAccessor();
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        
         services.AddHostedService<PopularMoviesWorker>();
 
         services.Configure<CacheSettings>(config.GetSection(CacheSettings.SectionName));
@@ -48,6 +51,12 @@ public static class ServiceCollectionExtensions
     {
         services.AddAuthorization();
         
+        services.Configure<Microsoft.AspNetCore.Identity.IdentityOptions>(options =>
+        {
+            options.Password.RequireLowercase = false;
+            options.Password.RequiredLength = 8;
+        });
+
         services.AddIdentityApiEndpoints<ApplicationUser>()
             .AddEntityFrameworkStores<MovieTrackerDbContext>();
 
