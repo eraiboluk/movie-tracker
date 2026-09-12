@@ -110,6 +110,14 @@ public class MoviesController : ControllerBase
         }
     }
 
+    [HttpGet("tmdb/{tmdbId}")]
+    public async Task<ActionResult<TmdbMovieDetailsDto>> GetMovieDetails(int tmdbId, CancellationToken ct)
+    {
+        var details = await _tmdbService.GetMovieDetailsAsync(tmdbId, ct);
+        if (details is null) return NotFound();
+        return Ok(details);
+    }
+
     [HttpGet("popular")]
     public async Task<ActionResult<List<TmdbMovieDto>>> GetPopularMovies()
     {

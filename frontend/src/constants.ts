@@ -20,11 +20,13 @@ export const QUERY_KEYS = {
   POPULAR_MOVIES: 'popular-movies',
   SEARCH_MOVIES: 'tmdb-search',
   MY_MOVIES: 'my-movies',
+  MOVIE_DETAILS: 'movie-details',
 } as const
 
 export const STALE_TIMES = {
   POPULAR_MOVIES: 1000 * 60 * 30,
   SEARCH: 1000 * 60 * 5,
+  MOVIE_DETAILS: 1000 * 60 * 60 * 24,
 } as const
 
 export const UI = {
@@ -34,4 +36,9 @@ export const UI = {
   SNACKBAR_AUTO_HIDE_DURATION_MS: 4000,
   REVIEW_MAX_CHARS: 1000,
   ALLOWED_RATINGS: [1, 2, 3, 4, 5, 6, 8, 9, 10],
+  PAGE_TRANSITION_DURATION_MS: 500,
+  MOVIE_DETAILS: {
+    POSTER_WIDTH: 300,
+    POSTER_HEIGHT: 450,
+  }
 } as const
