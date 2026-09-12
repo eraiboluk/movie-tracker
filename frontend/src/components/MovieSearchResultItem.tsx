@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import {
   ListItemButton,
   ListItemAvatar,
@@ -21,6 +22,7 @@ interface MovieSearchResultItemProps {
 
 export function MovieSearchResultItem({ movie, isAdding, onAdd, liProps }: MovieSearchResultItemProps) {
   const theme = useTheme()
+  const navigate = useNavigate()
   const posterUrl = getPosterUrl(movie.posterPath, SEARCH_RESULT_POSTER_SIZE)
 
   return (
@@ -29,6 +31,10 @@ export function MovieSearchResultItem({ movie, isAdding, onAdd, liProps }: Movie
       {...liProps}
       divider
       disabled={isAdding}
+      onClick={(e) => {
+        if (liProps?.onClick) liProps.onClick(e)
+        navigate(`/movie/${movie.tmdbId}`)
+      }}
     >
       <ListItemAvatar>
         <Avatar

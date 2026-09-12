@@ -85,6 +85,39 @@ public class MoviesController : ControllerBase
         return deleted ? NoContent() : NotFound();
     }
 
+    [HttpGet("{id}/review")]
+    public async Task<ActionResult<ReviewDto>> GetReview(int id, CancellationToken ct)
+    {
+        var userId = _currentUser.GetCurrentUserId();
+        var review = await _movieService.GetReviewAsync(userId, id, ct);
+        if (review is null) return NotFound();
+        
+        return Ok(review);
+    }
+
+    [HttpPost("{id}/review")]
+    public async Task<ActionResult<ReviewDto>> AddOrUpdateReview(int id, AddOrUpdateReviewRequestDto request, CancellationToken ct)
+    {
+        try
+        {
+            var userId = _currentUser.GetCurrentUserId();
+            var review = await _movieService.AddOrUpdateReviewAsync(userId, id, request, ct);
+            return Ok(review);
+        }
+        catch (InvalidOperationException)
+        {
+            return NotFound();
+        }
+    }
+
+    [HttpGet("tmdb/{tmdbId}")]
+    public async Task<ActionResult<TmdbMovieDetailsDto>> GetMovieDetails(int tmdbId, CancellationToken ct)
+    {
+        var details = await _tmdbService.GetMovieDetailsAsync(tmdbId, ct);
+        if (details is null) return NotFound();
+        return Ok(details);
+    }
+
     [HttpGet("popular")]
     public async Task<ActionResult<List<TmdbMovieDto>>> GetPopularMovies()
     {

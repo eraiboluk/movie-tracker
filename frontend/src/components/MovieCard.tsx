@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom'
 import { Card, CardMedia, Box, Typography, IconButton, CircularProgress } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -13,11 +14,14 @@ interface MovieCardProps {
 
 export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
   const theme = useTheme()
+  const navigate = useNavigate()
   const posterUrl = getPosterUrl(movie.posterPath, DEFAULT_POSTER_SIZE)
 
   return (
     <Card
+      onClick={() => navigate(`/movie/${movie.tmdbId}`)}
       sx={{
+        cursor: 'pointer',
         position: 'relative',
         borderRadius: theme.custom.card.borderRadius,
         overflow: 'hidden',
@@ -36,7 +40,10 @@ export function MovieCard({ movie, isDeleting, onDelete }: MovieCardProps) {
       <IconButton
         className="delete-btn"
         aria-label={`Remove ${movie.title} from the list`}
-        onClick={() => onDelete(movie.id)}
+        onClick={(e) => {
+          e.stopPropagation()
+          onDelete(movie.id)
+        }}
         disabled={isDeleting}
         size="small"
         sx={{

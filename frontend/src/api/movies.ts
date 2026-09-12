@@ -20,6 +20,14 @@ export interface TmdbSearchResult {
   totalPages: number
 }
 
+export interface TmdbMovieDetails extends TmdbMovie {
+  backdropPath?: string
+  runtime?: number
+  voteAverage?: number
+  tagline?: string
+  genres: string[]
+}
+
 export const getPosterUrl = (
   posterPath: string | null | undefined,
   size: keyof typeof TMDB_POSTER_SIZES = DEFAULT_POSTER_SIZE
@@ -45,11 +53,36 @@ export const getMyMovies = async (): Promise<Movie[]> => {
   return data
 }
 
-export const addMovie = async (movie: TmdbMovie): Promise<Movie> => {
+export interface AddMoviePayload extends TmdbMovie {
+  rating: number
+  watchedOn: string
+  comment?: string
+}
+
+export const addMovie = async (movie: AddMoviePayload): Promise<Movie> => {
   const { data } = await apiClient.post<Movie>('/movies', movie)
   return data
 }
 
 export const deleteMovie = async (id: number): Promise<void> => {
   await apiClient.delete(`/movies/${id}`)
+}
+
+export const getMovieDetails = async (tmdbId: number): Promise<TmdbMovieDetails> => {
+  const { data } = await apiClient.get<TmdbMovieDetails>(`/movies/tmdb/${tmdbId}`)
+  return data
+}
+
+export interface ReviewDto {
+  id: number
+  movieId: number
+  rating: number
+  comment?: string
+  watchedOn: string
+  createdAt: string
+}
+
+export const getMovieReview = async (localMovieId: number): Promise<ReviewDto> => {
+  const { data } = await apiClient.get<ReviewDto>(`/movies/${localMovieId}/review`)
+  return data
 }

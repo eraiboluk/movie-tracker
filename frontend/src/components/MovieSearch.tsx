@@ -1,12 +1,19 @@
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Autocomplete, TextField, InputAdornment, Alert, Snackbar } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
 import SearchIcon from '@mui/icons-material/Search'
 import { useMovieSearch } from '../hooks/useMovieSearch'
 import { MovieSearchResultItem } from './MovieSearchResultItem'
+import { ReviewModal } from './ReviewModal'
 import { UI } from '../constants'
+import type { TmdbMovie } from '../api/movies'
 
 export function MovieSearch() {
   const theme = useTheme()
+  const navigate = useNavigate()
+  const [selectedMovie, setSelectedMovie] = useState<TmdbMovie | null>(null)
+
   const {
     input,
     setInput,
@@ -22,6 +29,27 @@ export function MovieSearch() {
     isFetchingNextPage,
   } = useMovieSearch()
 
+  const handleAddClick = (movie: TmdbMovie) => {
+    setSelectedMovie(movie)
+  }
+
+  const handleModalSave = (rating: number, watchedOn: string, comment?: string) => {
+    if (!selectedMovie) return
+    addMovie(
+      {
+        ...selectedMovie,
+        rating,
+        watchedOn,
+        comment,
+      },
+      {
+        onSettled: () => {
+          setSelectedMovie(null)
+        },
+      }
+    )
+  }
+
   return (
     <>
       <Autocomplete
@@ -33,6 +61,11 @@ export function MovieSearch() {
         inputValue={input}
         onInputChange={(_e, value, reason) => {
           if (reason !== 'reset') setInput(value)
+        }}
+        onChange={(_e, value) => {
+          if (value && typeof value !== 'string') {
+            navigate(`/movie/${value.tmdbId}`)
+          }
         }}
         filterOptions={(x) => x}
         loading={isFetching}
@@ -60,7 +93,7 @@ export function MovieSearch() {
               liProps={rest}
               movie={movie}
               isAdding={addingMovieId === movie.tmdbId}
-              onAdd={addMovie}
+              onAdd={handleAddClick}
             />
           )
         }}
@@ -104,6 +137,16 @@ export function MovieSearch() {
           {snackbar.message}
         </Alert>
       </Snackbar>
+
+      {selectedMovie && (
+        <ReviewModal
+          movie={selectedMovie}
+          open={true}
+          onClose={() => setSelectedMovie(null)}
+          onSave={handleModalSave}
+          isSaving={addingMovieId === selectedMovie.tmdbId}
+        />
+      )}
     </>
   )
 }

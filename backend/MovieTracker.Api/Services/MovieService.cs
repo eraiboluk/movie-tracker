@@ -39,6 +39,9 @@ public class MovieService : IMovieService
         if (exists)
             throw new InvalidOperationException("Film already exists in the list.");
 
+        if (request.Rating == 7)
+            throw new InvalidOperationException("Rating 7 is not allowed.");
+
         var movie = new Movie
         {
             UserId = userId,
@@ -50,6 +53,15 @@ public class MovieService : IMovieService
                 ? DateTime.SpecifyKind(parsed, DateTimeKind.Utc)
                 : null
         };
+
+        var review = new Review
+        {
+            Rating = request.Rating,
+            Comment = request.Comment,
+            WatchedOn = request.WatchedOn.ToUniversalTime(),
+            CreatedAt = DateTime.UtcNow
+        };
+        movie.Reviews.Add(review);
 
         _db.Movies.Add(movie);
         await _db.SaveChangesAsync(ct);
@@ -74,5 +86,69 @@ public class MovieService : IMovieService
         _db.Movies.Remove(movie);
         await _db.SaveChangesAsync(ct);
         return true;
+    }
+
+    public async Task<ReviewDto?> GetReviewAsync(Guid userId, int movieId, CancellationToken ct = default)
+    {
+        var review = await _db.Movies
+            .AsNoTracking()
+            .Where(m => m.Id == movieId && m.UserId == userId)
+            .SelectMany(m => m.Reviews)
+            .FirstOrDefaultAsync(ct);
+
+        if (review is null) return null;
+
+        return new ReviewDto
+        {
+            Id = review.Id,
+            MovieId = review.MovieId,
+            Rating = review.Rating,
+            Comment = review.Comment,
+            WatchedOn = review.WatchedOn,
+            CreatedAt = review.CreatedAt
+        };
+    }
+
+    public async Task<ReviewDto> AddOrUpdateReviewAsync(Guid userId, int movieId, AddOrUpdateReviewRequestDto request, CancellationToken ct = default)
+    {
+        var movie = await _db.Movies
+            .Include(m => m.Reviews)
+            .FirstOrDefaultAsync(m => m.Id == movieId && m.UserId == userId, ct);
+
+        if (movie is null)
+            throw new InvalidOperationException("Movie not found.");
+
+        var review = movie.Reviews.FirstOrDefault();
+
+        if (review is null)
+        {
+            review = new Review
+            {
+                MovieId = movieId,
+                Rating = request.Rating,
+                Comment = request.Comment,
+                WatchedOn = request.WatchedOn.ToUniversalTime(),
+                CreatedAt = DateTime.UtcNow
+            };
+            movie.Reviews.Add(review);
+        }
+        else
+        {
+            review.Rating = request.Rating;
+            review.Comment = request.Comment;
+            review.WatchedOn = request.WatchedOn.ToUniversalTime();
+        }
+
+        await _db.SaveChangesAsync(ct);
+
+        return new ReviewDto
+        {
+            Id = review.Id,
+            MovieId = review.MovieId,
+            Rating = review.Rating,
+            Comment = review.Comment,
+            WatchedOn = review.WatchedOn,
+            CreatedAt = review.CreatedAt
+        };
     }
 }
